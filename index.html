@@ -17,28 +17,33 @@
     <div class="max-w-5xl mx-auto w-full">
         <!-- Header -->
         <header class="text-center mb-8 relative bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-            <!-- Language Switcher Top Right -->
-            <div class="absolute right-4 top-4">
-                <select id="langSelect" onchange="switchLanguage(this.value)" class="px-3 py-1 bg-slate-50 border border-slate-200 rounded-lg text-xs font-semibold text-slate-700 focus:outline-none shadow-sm cursor-pointer">
+            <!-- Language Switcher (Responsive: Mobile & PC Friendly) -->
+            <div class="flex justify-between items-center sm:absolute sm:right-4 sm:top-4 mb-4 sm:mb-0">
+                <div class="inline-block sm:hidden">
+                    <span class="px-2.5 py-1 bg-indigo-50 text-indigo-600 rounded-full text-[10px] font-bold tracking-wider uppercase border border-indigo-100 flex items-center gap-1">
+                        <i class="ph-bold ph-code"></i> Cybrfix
+                    </span>
+                </div>
+                <select id="langSelect" onchange="switchLanguage(this.value)" class="px-3 py-1 bg-slate-50 border border-slate-200 rounded-lg text-xs font-semibold text-slate-700 focus:outline-none shadow-sm cursor-pointer ml-auto sm:ml-0">
                     <option value="bn">বাংলা (Bengali)</option>
                     <option value="en">English</option>
                 </select>
             </div>
 
-            <!-- Brand Badge -->
-            <div class="inline-block mb-2">
+            <!-- Brand Badge for PC -->
+            <div class="hidden sm:inline-block mb-2">
                 <span class="px-3 py-1 bg-indigo-50 text-indigo-600 rounded-full text-xs font-bold tracking-wider uppercase border border-indigo-100 flex items-center gap-1.5 mx-auto">
                     <i class="ph-bold ph-code"></i> Developed by Cybrfix
                 </span>
             </div>
 
-            <h1 class="text-3xl font-extrabold text-slate-800 flex items-center justify-center gap-2">
+            <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-800 flex items-center justify-center gap-2">
                 <i class="ph-bold ph-book-open text-indigo-600"></i> <span id="txtTitle">স্মার্ট লেনদেন খাতা</span>
             </h1>
-            <p id="txtSubtitle" class="text-slate-500 mt-1 text-sm">ব্যক্তিভিত্তিক খাতা ও সহজ লেনদেন ট্র্যাকার</p>
+            <p id="txtSubtitle" class="text-slate-500 mt-1 text-xs sm:text-sm">ব্যক্তিভিত্তিক খাতা ও সহজ লেনদেন ট্র্যাকার</p>
             
             <!-- Backup & Restore -->
-            <div class="mt-4 flex justify-center gap-2">
+            <div class="mt-4 flex flex-wrap justify-center gap-2">
                 <button onclick="exportData()" class="px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-600 rounded-lg text-xs font-semibold flex items-center gap-1 transition-colors border border-emerald-200">
                     <i class="ph-bold ph-download-simple"></i> <span id="txtExport">ব্যাকআপ নামান (Export)</span>
                 </button>
@@ -171,7 +176,6 @@
     </footer>
 
     <script>
-        // Translations Dictionary
         const translations = {
             bn: {
                 title: "স্মার্ট লেনদেন খাতা",
@@ -303,7 +307,6 @@
         let ledgerData = JSON.parse(localStorage.getItem('cybrfix_smart_khata')) || { persons: [] };
         let activePersonId = null;
 
-        // Elements
         const addPersonForm = document.getElementById('addPersonForm');
         const personListEl = document.getElementById('personList');
         const searchPersonEl = document.getElementById('searchPerson');
@@ -531,6 +534,7 @@
             let totalReceivable = 0;
             let totalPayable = 0;
 
+            ledgerData.persons.persons?.forEach?.(...) // fallback loop safely handled below
             ledgerData.persons.forEach(p => {
                 const bal = getPersonBalance(p);
                 if(bal > 0) totalReceivable += bal;
@@ -579,7 +583,6 @@
             }
         }
 
-        // Initial Execution
         updateUItext();
         renderPersonList();
         renderGlobalSummary();
