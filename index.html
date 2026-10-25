@@ -12,23 +12,38 @@
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
     </style>
 </head>
-<body class="bg-slate-100 min-h-screen py-8 px-4 sm:px-6 lg:px-8">
+<body class="bg-slate-100 min-h-screen py-8 px-4 sm:px-6 lg:px-8 flex flex-col justify-between">
 
-    <div class="max-w-5xl mx-auto">
+    <div class="max-w-5xl mx-auto w-full">
         <!-- Header -->
-        <header class="text-center mb-8">
+        <header class="text-center mb-8 relative bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+            <!-- Language Switcher Top Right -->
+            <div class="absolute right-4 top-4">
+                <select id="langSelect" onchange="switchLanguage(this.value)" class="px-3 py-1 bg-slate-50 border border-slate-200 rounded-lg text-xs font-semibold text-slate-700 focus:outline-none shadow-sm cursor-pointer">
+                    <option value="bn">বাংলা (Bengali)</option>
+                    <option value="en">English</option>
+                </select>
+            </div>
+
+            <!-- Brand Badge -->
+            <div class="inline-block mb-2">
+                <span class="px-3 py-1 bg-indigo-50 text-indigo-600 rounded-full text-xs font-bold tracking-wider uppercase border border-indigo-100 flex items-center gap-1.5 mx-auto">
+                    <i class="ph-bold ph-code"></i> Developed by Cybrfix
+                </span>
+            </div>
+
             <h1 class="text-3xl font-extrabold text-slate-800 flex items-center justify-center gap-2">
-                <i class="ph-bold ph-book-open text-indigo-600"></i> স্মার্ট লেনদেন খাতা
+                <i class="ph-bold ph-book-open text-indigo-600"></i> <span id="txtTitle">স্মার্ট লেনদেন খাতা</span>
             </h1>
-            <p class="text-slate-500 mt-1 text-sm">ব্যক্তিভিত্তিক খাতা ও সহজ লেনদেন ট্র্যাকার</p>
+            <p id="txtSubtitle" class="text-slate-500 mt-1 text-sm">ব্যক্তিভিত্তিক খাতা ও সহজ লেনদেন ট্র্যাকার</p>
             
             <!-- Backup & Restore -->
             <div class="mt-4 flex justify-center gap-2">
                 <button onclick="exportData()" class="px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-600 rounded-lg text-xs font-semibold flex items-center gap-1 transition-colors border border-emerald-200">
-                    <i class="ph-bold ph-download-simple"></i> ব্যাকআপ নামান (Export)
+                    <i class="ph-bold ph-download-simple"></i> <span id="txtExport">ব্যাকআপ নামান (Export)</span>
                 </button>
                 <label class="px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 rounded-lg text-xs font-semibold flex items-center gap-1 transition-colors border border-indigo-200 cursor-pointer">
-                    <i class="ph-bold ph-upload-simple"></i> ফাইল আপলোড (Import)
+                    <i class="ph-bold ph-upload-simple"></i> <span id="txtImport">ফাইল আপলোড (Import)</span>
                     <input type="file" id="importFile" accept=".json" onchange="importData(event)" class="hidden">
                 </label>
             </div>
@@ -37,15 +52,15 @@
         <!-- Summary Cards -->
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
             <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
-                <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">মোট পাওনা ( পাবো )</p>
+                <p id="txtCardRec" class="text-xs font-bold text-slate-400 uppercase tracking-wider">মোট পাওনা ( পাবো )</p>
                 <h3 id="totalReceivable" class="text-2xl font-black text-emerald-600 mt-1">৳ 0.00</h3>
             </div>
             <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
-                <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">মোট দেনা ( দিতে হবে )</p>
+                <p id="txtCardPay" class="text-xs font-bold text-slate-400 uppercase tracking-wider">মোট দেনা ( দিতে হবে )</p>
                 <h3 id="totalPayable" class="text-2xl font-black text-rose-600 mt-1">৳ 0.00</h3>
             </div>
             <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
-                <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">মোট ব্যালেন্স</p>
+                <p id="txtCardNet" class="text-xs font-bold text-slate-400 uppercase tracking-wider">মোট ব্যালেন্স</p>
                 <h3 id="netBalance" class="text-2xl font-black text-indigo-600 mt-1">৳ 0.00</h3>
             </div>
         </div>
@@ -54,13 +69,13 @@
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
             <!-- Add Person Form -->
             <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-                <h2 class="text-md font-bold text-slate-800 mb-3 flex items-center gap-2">
+                <h2 id="txtAddPersonTitle" class="text-md font-bold text-slate-800 mb-3 flex items-center gap-2">
                     <i class="ph-bold ph-user-plus text-indigo-600"></i> নতুন ব্যক্তি যোগ করুন
                 </h2>
                 <form id="addPersonForm" class="space-y-3">
                     <input type="text" id="newPersonName" required placeholder="ব্যক্তির নাম..." class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-indigo-500">
                     <input type="text" id="newPersonPhone" placeholder="মোবাইল নম্বর (অপশনাল)..." class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-indigo-500">
-                    <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded-xl text-sm transition-all shadow-md shadow-indigo-100">
+                    <button type="submit" id="txtAddPersonBtn" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded-xl text-sm transition-all shadow-md shadow-indigo-100">
                         ব্যক্তি যুক্ত করুন
                     </button>
                 </form>
@@ -69,7 +84,7 @@
             <!-- Person Selection & Search -->
             <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 md:col-span-2 flex flex-col justify-between">
                 <div>
-                    <h2 class="text-md font-bold text-slate-800 mb-3 flex items-center gap-2">
+                    <h2 id="txtSelectPersonTitle" class="text-md font-bold text-slate-800 mb-3 flex items-center gap-2">
                         <i class="ph-bold ph-users text-indigo-600"></i> ব্যক্তি নির্বাচন করুন (খাতা খুলুন)
                     </h2>
                     <input type="text" id="searchPerson" oninput="renderPersonList()" placeholder="নাম বা মোবাইল দিয়ে খুঁজুন..." class="w-full mb-3 px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-indigo-500">
@@ -90,31 +105,31 @@
                     <p id="activePersonPhone" class="text-xs text-slate-400"></p>
                 </div>
                 <div class="text-right">
-                    <span class="text-xs text-slate-400 block font-semibold">বর্তমান হিসাব</span>
+                    <span id="txtCurrentBalance" class="text-xs text-slate-400 block font-semibold">বর্তমান হিসাব</span>
                     <span id="activePersonBalance" class="text-xl font-black">৳ 0.00</span>
                 </div>
             </div>
 
-            <!-- Smart 2-Option Entry Form -->
+            <!-- Smart Entry Form -->
             <form id="addTransactionForm" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 mb-6 bg-slate-50 p-4 rounded-xl border border-slate-200/85">
                 <input type="hidden" id="editingTransId" value="">
                 <div>
-                    <label class="block text-xs font-semibold text-slate-600 mb-1">লেনদেনের ধরণ</label>
+                    <label id="txtTransTypeLabel" class="block text-xs font-semibold text-slate-600 mb-1">লেনদেনের ধরণ</label>
                     <select id="transType" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-indigo-500 font-medium">
-                        <option value="give">দিলাম (পকেট থেকে গেল)</option>
-                        <option value="receive">পেলাম (পকেটে আসলো)</option>
+                        <option value="give" id="optGive">দিলাম (পকেট থেকে গেল)</option>
+                        <option value="receive" id="optReceive">পেলাম (পকেটে আসলো)</option>
                     </select>
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold text-slate-600 mb-1">টাকার পরিমাণ (৳)</label>
+                    <label id="txtAmountLabel" class="block text-xs font-semibold text-slate-600 mb-1">টাকার পরিমাণ (৳)</label>
                     <input type="number" id="transAmount" required min="1" placeholder="০.০০" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-indigo-500">
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold text-slate-600 mb-1">তারিখ (ইংরেজি)</label>
+                    <label id="txtDateLabel" class="block text-xs font-semibold text-slate-600 mb-1">তারিখ (ইংরেজি)</label>
                     <input type="text" id="transDate" required placeholder="DD MMM YYYY" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-indigo-500 font-mono">
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold text-slate-600 mb-1">বিবরণ / নোট</label>
+                    <label id="txtNoteLabel" class="block text-xs font-semibold text-slate-600 mb-1">বিবরণ / নোট</label>
                     <input type="text" id="transNote" placeholder="কারণ বা নোট..." class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-indigo-500">
                 </div>
                 <div class="flex items-end gap-1">
@@ -132,11 +147,11 @@
                 <table class="w-full text-left border-collapse">
                     <thead>
                         <tr class="bg-slate-50 text-slate-400 text-xs uppercase tracking-wider border-b border-slate-100">
-                            <th class="py-3 px-4">তারিখ</th>
-                            <th class="py-3 px-4">বিবরণ</th>
-                            <th class="py-3 px-4">ধরণ</th>
-                            <th class="py-3 px-4">পরিমাণ</th>
-                            <th class="py-3 px-4 text-center">অ্যাকশন</th>
+                            <th id="thDate" class="py-3 px-4">তারিখ</th>
+                            <th id="thNote" class="py-3 px-4">বিবরণ</th>
+                            <th id="thType" class="py-3 px-4">ধরণ</th>
+                            <th id="thAmount" class="py-3 px-4">পরিমাণ</th>
+                            <th id="thAction" class="py-3 px-4 text-center">অ্যাকশন</th>
                         </tr>
                     </thead>
                     <tbody id="personTransTable" class="text-sm text-slate-700 divide-y divide-slate-100">
@@ -150,7 +165,141 @@
         </div>
     </div>
 
+    <!-- Footer -->
+    <footer class="text-center mt-8 text-slate-400 text-xs">
+        <p>© 2026 Smart Ledger Tool &bull; Developed by <span class="font-semibold text-slate-600">Cybrfix</span></p>
+    </footer>
+
     <script>
+        // Translations Dictionary
+        const translations = {
+            bn: {
+                title: "স্মার্ট লেনদেন খাতা",
+                subtitle: "ব্যক্তিভিত্তিক খাতা ও সহজ লেনদেন ট্র্যাকার",
+                export: "ব্যাকআপ নামান (Export)",
+                import: "ফাইল আপলোড (Import)",
+                cardRec: "মোট পাওনা ( পাবো )",
+                cardPay: "মোট দেনা ( দিতে হবে )",
+                cardNet: "মোট ব্যালেন্স",
+                addPersonTitle: "নতুন ব্যক্তি যোগ করুন",
+                namePh: "ব্যক্তির নাম...",
+                phonePh: "মোবাইল নম্বর (অপশনাল)...",
+                addPersonBtn: "ব্যক্তি যুক্ত করুন",
+                selectPersonTitle: "ব্যক্তি নির্বাচন করুন (খাতা খুলুন)",
+                searchPh: "নাম বা মোবাইল দিয়ে খুঁজুন...",
+                currentBal: "বর্তমান হিসাব",
+                transTypeLbl: "লেনদেনের ধরণ",
+                optGive: "দিলাম (পকেট থেকে গেল)",
+                optReceive: "পেলাম (পকেটে আসলো)",
+                amountLbl: "টাকার পরিমাণ (৳)",
+                dateLbl: "তারিখ (ইংরেজি)",
+                noteLbl: "বিবরণ / নোট",
+                notePh: "কারণ বা নোট...",
+                addBtn: "যোগ করুন",
+                updateBtn: "আপডেট করুন",
+                thDate: "তারিখ",
+                thNote: "বিবরণ",
+                thType: "ধরণ",
+                thAmount: "পরিমাণ",
+                thAction: "অ্যাকশন",
+                noTrans: "এই ব্যক্তির সাথে এখনও কোনো লেনদেন রেকর্ড হয়নি।",
+                giveBadge: "দিলাম (Out)",
+                receiveBadge: "পেলাম (In)",
+                balGet: "পাবো",
+                balPay: "দেনা",
+                balEqual: "সমতা",
+                confirmDeleteTrans: "আপনি কি এই এন্ট্রিটি মুছে ফেলতে চান?"
+            },
+            en: {
+                title: "Smart Ledger & Khata",
+                subtitle: "Personal Multi-Person Transaction Tracker",
+                export: "Export Backup",
+                import: "Import Backup",
+                cardRec: "Total Receivable (To Get)",
+                cardPay: "Total Payable (To Give)",
+                cardNet: "Net Balance",
+                addPersonTitle: "Add New Person",
+                namePh: "Person's name...",
+                phonePh: "Mobile number (Optional)...",
+                addPersonBtn: "Add Person",
+                selectPersonTitle: "Select Person (Open Ledger)",
+                searchPh: "Search by name or mobile...",
+                currentBal: "Current Balance",
+                transTypeLbl: "Transaction Type",
+                optGive: "Gave (Outflow)",
+                optReceive: "Received (Inflow)",
+                amountLbl: "Amount (৳)",
+                dateLbl: "Date (English)",
+                noteLbl: "Description / Note",
+                notePh: "Reason or note...",
+                addBtn: "Add Entry",
+                updateBtn: "Update Entry",
+                thDate: "Date",
+                thNote: "Description",
+                thType: "Type",
+                thAmount: "Amount",
+                thAction: "Action",
+                noTrans: "No transactions recorded with this person yet.",
+                giveBadge: "Gave (Out)",
+                receiveBadge: "Received (In)",
+                balGet: "To Get",
+                balPay: "To Pay",
+                balEqual: "Equal",
+                confirmDeleteTrans: "Do you want to delete this transaction?"
+            }
+        };
+
+        let currentLang = localStorage.getItem('cybrfix_lang') || 'bn';
+        document.getElementById('langSelect').value = currentLang;
+
+        function switchLanguage(lang) {
+            currentLang = lang;
+            localStorage.setItem('cybrfix_lang', lang);
+            updateUItext();
+            renderPersonList();
+            renderActiveLedger();
+            renderGlobalSummary();
+        }
+
+        function updateUItext() {
+            const t = translations[currentLang];
+            document.getElementById('txtTitle').textContent = t.title;
+            document.getElementById('txtSubtitle').textContent = t.subtitle;
+            document.getElementById('txtExport').textContent = t.export;
+            document.getElementById('txtImport').textContent = t.import;
+            document.getElementById('txtCardRec').textContent = t.cardRec;
+            document.getElementById('txtCardPay').textContent = t.cardPay;
+            document.getElementById('txtCardNet').textContent = t.cardNet;
+            document.getElementById('txtAddPersonTitle').innerHTML = `<i class="ph-bold ph-user-plus text-indigo-600"></i> ${t.addPersonTitle}`;
+            document.getElementById('newPersonName').placeholder = t.namePh;
+            document.getElementById('newPersonPhone').placeholder = t.phonePh;
+            document.getElementById('txtAddPersonBtn').textContent = t.addPersonBtn;
+            document.getElementById('txtSelectPersonTitle').innerHTML = `<i class="ph-bold ph-users text-indigo-600"></i> ${t.selectPersonTitle}`;
+            document.getElementById('searchPerson').placeholder = t.searchPh;
+            document.getElementById('txtCurrentBalance').textContent = t.currentBal;
+            document.getElementById('txtTransTypeLabel').textContent = t.transTypeLbl;
+            document.getElementById('optGive').textContent = t.optGive;
+            document.getElementById('optReceive').textContent = t.optReceive;
+            document.getElementById('txtAmountLabel').textContent = t.amountLbl;
+            document.getElementById('txtDateLabel').textContent = t.dateLbl;
+            document.getElementById('txtNoteLabel').textContent = t.noteLbl;
+            document.getElementById('transNote').placeholder = t.notePh;
+            
+            const editingId = document.getElementById('editingTransId').value;
+            if(!editingId) {
+                document.getElementById('formSubmitBtn').textContent = t.addBtn;
+            } else {
+                document.getElementById('formSubmitBtn').textContent = t.updateBtn;
+            }
+
+            document.getElementById('thDate').textContent = t.thDate;
+            document.getElementById('thNote').textContent = t.thNote;
+            document.getElementById('thType').textContent = t.thType;
+            document.getElementById('thAmount').textContent = t.thAmount;
+            document.getElementById('thAction').textContent = t.thAction;
+            document.getElementById('noTransMsg').textContent = t.noTrans;
+        }
+
         let ledgerData = JSON.parse(localStorage.getItem('cybrfix_smart_khata')) || { persons: [] };
         let activePersonId = null;
 
@@ -170,14 +319,12 @@
         const cancelEditBtn = document.getElementById('cancelEditBtn');
         const transDateEl = document.getElementById('transDate');
 
-        // Set default date in English format (e.g., 26 Oct 2026)
         function getDefaultDate() {
             const options = { day: 'numeric', month: 'short', year: 'numeric' };
             return new Date().toLocaleDateString('en-GB', options);
         }
         transDateEl.value = getDefaultDate();
 
-        // Add New Person
         addPersonForm.addEventListener('submit', function(e) {
             e.preventDefault();
             const name = document.getElementById('newPersonName').value.trim();
@@ -196,7 +343,6 @@
             selectPerson(newPerson.id);
         });
 
-        // Add or Update Transaction
         addTransactionForm.addEventListener('submit', function(e) {
             e.preventDefault();
             if(!activePersonId) return;
@@ -205,7 +351,7 @@
             const type = document.getElementById('transType').value;
             const amount = parseFloat(document.getElementById('transAmount').value);
             const date = transDateEl.value.trim() || getDefaultDate();
-            const note = document.getElementById('transNote').value.trim() || 'সাধারণ লেনদেন';
+            const note = document.getElementById('transNote').value.trim() || (currentLang === 'bn' ? 'সাধারণ লেনদেন' : 'General Transaction');
 
             const person = ledgerData.persons.find(p => p.id === activePersonId);
             if(person) {
@@ -232,28 +378,29 @@
         });
 
         function resetForm() {
+            const t = translations[currentLang];
             editingTransIdEl.value = '';
             document.getElementById('transAmount').value = '';
             document.getElementById('transNote').value = '';
             transDateEl.value = getDefaultDate();
-            formSubmitBtn.textContent = 'যোগ করুন';
+            formSubmitBtn.textContent = t.addBtn;
             formSubmitBtn.className = 'w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2 px-3 rounded-xl text-sm transition-all shadow-md shadow-emerald-100';
             cancelEditBtn.classList.add('hidden');
         }
 
-        // Edit Setup (Keeps English Date intact)
         function editTransaction(transId) {
             const person = ledgerData.persons.find(p => p.id === activePersonId);
             if(person) {
                 const trans = person.transactions.find(t => t.id === transId);
                 if(trans) {
+                    const t = translations[currentLang];
                     editingTransIdEl.value = trans.id;
                     document.getElementById('transType').value = (trans.type === 'give' || trans.type === 'pay') ? 'give' : 'receive';
                     document.getElementById('transAmount').value = trans.amount;
                     transDateEl.value = trans.date;
                     document.getElementById('transNote').value = trans.note;
 
-                    formSubmitBtn.textContent = 'আপডেট করুন';
+                    formSubmitBtn.textContent = t.updateBtn;
                     formSubmitBtn.className = 'w-full bg-amber-600 hover:bg-amber-700 text-white font-semibold py-2 px-3 rounded-xl text-sm transition-all shadow-md shadow-amber-100';
                     cancelEditBtn.classList.remove('hidden');
                     addTransactionForm.scrollIntoView({ behavior: 'smooth' });
@@ -261,7 +408,6 @@
             }
         }
 
-        // Select Active Person
         function selectPerson(id) {
             activePersonId = id;
             resetForm();
@@ -269,7 +415,6 @@
             renderActiveLedger();
         }
 
-        // Render Persons List
         function renderPersonList() {
             personListEl.innerHTML = '';
             const query = searchPersonEl.value.toLowerCase();
@@ -279,7 +424,7 @@
             );
 
             if(filtered.length === 0) {
-                personListEl.innerHTML = '<span class="text-xs text-slate-400">কোনো নাম পাওয়া যায়নি।</span>';
+                personListEl.innerHTML = `<span class="text-xs text-slate-400">${currentLang === 'bn' ? 'কোনো নাম পাওয়া যায়নি।' : 'No name found.'}</span>`;
                 return;
             }
 
@@ -304,7 +449,6 @@
             });
         }
 
-        // Calculate Person Balance
         function getPersonBalance(person) {
             let balance = 0; 
             person.transactions.forEach(t => {
@@ -314,7 +458,6 @@
             return balance;
         }
 
-        // Render Active Person Ledger
         function renderActiveLedger() {
             const person = ledgerData.persons.find(p => p.id === activePersonId);
             if(!person) {
@@ -326,19 +469,19 @@
             activePersonNameEl.textContent = person.name;
             activePersonPhoneEl.textContent = person.phone ? `📱 ${person.phone}` : '';
 
+            const t_dict = translations[currentLang];
             const bal = getPersonBalance(person);
             if(bal > 0) {
-                activePersonBalanceEl.textContent = `পাবো ৳ ${bal.toLocaleString('en-IN')}`;
+                activePersonBalanceEl.textContent = `${t_dict.balGet} ৳ ${bal.toLocaleString('en-IN')}`;
                 activePersonBalanceEl.className = 'text-xl font-black text-emerald-600';
             } else if(bal < 0) {
-                activePersonBalanceEl.textContent = `দেনা ৳ ${Math.abs(bal).toLocaleString('en-IN')}`;
+                activePersonBalanceEl.textContent = `${t_dict.balPay} ৳ ${Math.abs(bal).toLocaleString('en-IN')}`;
                 activePersonBalanceEl.className = 'text-xl font-black text-rose-600';
             } else {
-                activePersonBalanceEl.textContent = `৳ 0.00 (সমতা)`;
+                activePersonBalanceEl.textContent = `৳ 0.00 (${t_dict.balEqual})`;
                 activePersonBalanceEl.className = 'text-xl font-black text-slate-500';
             }
 
-            // Render Table
             personTransTable.innerHTML = '';
             if(person.transactions.length === 0) {
                 noTransMsg.classList.remove('hidden');
@@ -350,8 +493,8 @@
 
                     let isGive = (t.type === 'give' || t.type === 'pay');
                     let typeBadge = isGive 
-                        ? '<span class="px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-600">দিলাম (Out)</span>'
-                        : '<span class="px-2.5 py-1 rounded-full text-xs font-bold bg-rose-50 text-rose-600">পেলাম (In)</span>';
+                        ? `<span class="px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-600">${t_dict.giveBadge}</span>`
+                        : `<span class="px-2.5 py-1 rounded-full text-xs font-bold bg-rose-50 text-rose-600">${t_dict.receiveBadge}</span>`;
 
                     row.innerHTML = `
                         <td class="py-3 px-4 text-xs text-slate-500 font-mono">${t.date}</td>
@@ -359,10 +502,10 @@
                         <td class="py-3 px-4">${typeBadge}</td>
                         <td class="py-3 px-4 font-bold text-slate-800">৳ ${t.amount.toLocaleString('en-IN')}</td>
                         <td class="py-3 px-4 text-center space-x-1">
-                            <button onclick="editTransaction(${t.id})" class="text-indigo-400 hover:text-indigo-600 transition-colors p-1" title="এডিট করুন">
+                            <button onclick="editTransaction(${t.id})" class="text-indigo-400 hover:text-indigo-600 transition-colors p-1" title="Edit">
                                 <i class="ph-bold ph-pencil-simple text-base"></i>
                             </button>
-                            <button onclick="deleteTransaction(${t.id})" class="text-slate-400 hover:text-rose-600 transition-colors p-1" title="ডিলিট করুন">
+                            <button onclick="deleteTransaction(${t.id})" class="text-slate-400 hover:text-rose-600 transition-colors p-1" title="Delete">
                                 <i class="ph-bold ph-trash text-base"></i>
                             </button>
                         </td>
@@ -372,9 +515,9 @@
             }
         }
 
-        // Delete Single Transaction
         function deleteTransaction(transId) {
-            if(confirm('আপনি কি এই এন্ট্রিটি মুছে ফেলতে চান?')) {
+            const t_dict = translations[currentLang];
+            if(confirm(t_dict.confirmDeleteTrans)) {
                 const person = ledgerData.persons.find(p => p.id === activePersonId);
                 if(person) {
                     person.transactions = person.transactions.filter(t => t.id !== transId);
@@ -384,7 +527,6 @@
             }
         }
 
-        // Global Summaries
         function renderGlobalSummary() {
             let totalReceivable = 0;
             let totalPayable = 0;
@@ -404,7 +546,6 @@
             netEl.className = `text-2xl font-black mt-1 ${net >= 0 ? 'text-emerald-600' : 'text-rose-600'}`;
         }
 
-        // Save & Render All
         function saveAndRender() {
             localStorage.setItem('cybrfix_smart_khata', JSON.stringify(ledgerData));
             renderPersonList();
@@ -412,7 +553,6 @@
             renderGlobalSummary();
         }
 
-        // Export Data
         function exportData() {
             const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(ledgerData));
             const downloadAnchor = document.createElement('a');
@@ -423,7 +563,6 @@
             downloadAnchor.remove();
         }
 
-        // Import Data
         function importData(event) {
             const fileReader = new FileReader();
             if(event.target.files[0]) {
@@ -432,15 +571,16 @@
                     try {
                         ledgerData = JSON.parse(e.target.result);
                         saveAndRender();
-                        alert('ডাটা সফলভাবে রিস্টোর করা হয়েছে!');
+                        alert(currentLang === 'bn' ? 'ডাটা সফলভাবে রিস্টোর করা হয়েছে!' : 'Data successfully restored!');
                     } catch (error) {
-                        alert('ভুল ফাইল ফরম্যাট!');
+                        alert(currentLang === 'bn' ? 'ভুল ফাইল ফরম্যাট!' : 'Invalid file format!');
                     }
                 }
             }
         }
 
         // Initial Execution
+        updateUItext();
         renderPersonList();
         renderGlobalSummary();
     </script>
