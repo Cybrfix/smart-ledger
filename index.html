@@ -371,20 +371,12 @@
             renderGlobalSummary();
         }
 
-        // 🔥 মোবাইলে redirect, পিসিতে popup
+        // 🔥 শুধু Popup ব্যবহার করা হচ্ছে (মোবাইল ও পিসি উভয়ের জন্য)
         function loginWithGoogle() {
             const provider = new firebase.auth.GoogleAuthProvider();
-            const isMobile = /Android|iPhone|iPad|iPod|Opera Mini|IEMobile|WPDesktop/i.test(navigator.userAgent);
-            
-            if (isMobile) {
-                auth.signInWithRedirect(provider).catch((error) => {
-                    alert("Login Failed: " + error.message);
-                });
-            } else {
-                auth.signInWithPopup(provider).catch((error) => {
-                    alert("Login Failed: " + error.message);
-                });
-            }
+            auth.signInWithPopup(provider).catch((error) => {
+                alert("Login Failed: " + error.message);
+            });
         }
 
         function logoutUser() {
