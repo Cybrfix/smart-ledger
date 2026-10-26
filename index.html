@@ -4,12 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Smart Ledger & Personal Khata | By Cybrfix</title>
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Phosphor Icons -->
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
-    
-    <!-- Firebase SDKs (Compat) -->
+
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
@@ -33,15 +30,12 @@
                 <p class="text-slate-500 mt-0.5 text-xs" id="app-subtitle">ব্যক্তিভিত্তিক খাতা ও সহজ লেনদেন ট্র্যাকার</p>
             </div>
 
-            <!-- Header Controls -->
             <div class="flex flex-wrap items-center justify-center gap-2">
-                <!-- Language Switcher -->
                 <div class="bg-slate-100 rounded-xl p-1 flex items-center border border-slate-200">
                     <button onclick="switchLanguage('bn')" id="lang-bn" class="px-2.5 py-1 text-xs font-semibold rounded-lg transition-all bg-indigo-600 text-white shadow-sm">বাংলা</button>
                     <button onclick="switchLanguage('en')" id="lang-en" class="px-2.5 py-1 text-xs font-semibold rounded-lg transition-all text-slate-600 hover:text-slate-900">English</button>
                 </div>
 
-                <!-- Google Auth Button / User Profile -->
                 <div id="auth-container">
                     <button onclick="loginWithGoogle()" id="login-btn" class="flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-xl text-xs font-semibold shadow-md shadow-indigo-100 transition-all">
                         <i class="ph-bold ph-google-logo text-sm"></i>
@@ -54,7 +48,6 @@
                     </div>
                 </div>
 
-                <!-- Backup & Restore -->
                 <div class="flex items-center gap-1">
                     <button onclick="exportData()" class="px-2 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-600 rounded-xl text-xs font-semibold flex items-center gap-1 transition-colors border border-emerald-200" title="ব্যাকআপ">
                         <i class="ph-bold ph-download-simple"></i> <span class="hidden sm:inline">Export</span>
@@ -67,11 +60,11 @@
             </div>
         </header>
 
-        <!-- Cloud Sync Notification Banner -->
+        <!-- Sync Banner -->
         <div id="sync-banner" class="bg-amber-50 border border-amber-200 text-amber-800 px-3 py-2 rounded-xl text-xs mb-4 flex items-center justify-between shadow-sm">
             <div class="flex items-center gap-2">
                 <i class="ph-bold ph-cloud-arrow-up text-base text-amber-600"></i>
-                <span id="sync-banner-text">আপনি অফলাইন মোডে আছেন। ডাটা ক্লাউডে সুরক্ষিত রাখতে জিমেইল দিয়ে লগইন করুন।</span>
+                <span id="sync-banner-text">আপনি অফলাইন মোডে আছেন। ডাটা ক্লাউডে সুরক্ষিত রাখতে জিমেইল দিয়ে লগইন করুন।</span>
             </div>
         </div>
 
@@ -91,10 +84,9 @@
             </div>
         </div>
 
-        <!-- VIEW 1: Home / Person Selection Screen -->
+        <!-- VIEW 1: Home -->
         <div id="homeView" class="space-y-4">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <!-- Add Person Form -->
                 <div class="bg-white p-4 sm:p-6 rounded-2xl shadow-sm border border-slate-200">
                     <h2 class="text-md font-bold text-slate-800 mb-3 flex items-center gap-2">
                         <i class="ph-bold ph-user-plus text-indigo-600"></i> <span id="sec-add-person">নতুন ব্যক্তি যোগ করুন</span>
@@ -108,7 +100,6 @@
                     </form>
                 </div>
 
-                <!-- Person Selection & Search -->
                 <div class="bg-white p-4 sm:p-6 rounded-2xl shadow-sm border border-slate-200 md:col-span-2 flex flex-col justify-between">
                     <div>
                         <h2 class="text-md font-bold text-slate-800 mb-3 flex items-center gap-2">
@@ -116,18 +107,16 @@
                         </h2>
                         <input type="text" id="searchPerson" oninput="renderPersonList()" placeholder="নাম বা মোবাইল দিয়ে খুঁজুন..." class="w-full mb-3 px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-indigo-500">
                     </div>
-                    <div id="personList" class="flex flex-wrap gap-2 max-h-48 overflow-y-auto p-1">
-                        <!-- Dynamic Person Buttons -->
-                    </div>
+                    <div id="personList" class="flex flex-wrap gap-2 max-h-48 overflow-y-auto p-1"></div>
                 </div>
             </div>
         </div>
 
-        <!-- VIEW 2: Active Person Ledger Screen -->
+        <!-- VIEW 2: Ledger -->
         <div id="ledgerView" class="hidden bg-white rounded-2xl shadow-sm border border-slate-200 p-3 sm:p-6 mb-6">
             <div class="flex items-center justify-between mb-3">
                 <button onclick="goBackToHome()" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-semibold transition-all">
-                    <i class="ph-bold ph-arrow-left text-sm"></i> <span id="btn-back">তালিকায় ফিরে যান</span>
+                    <i class="ph-bold ph-arrow-left text-sm"></i> <span id="btn-back">তালিকায় ফিরে যান</span>
                 </button>
                 <button onclick="deleteActivePerson()" class="inline-flex items-center gap-1 px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-xl text-xs font-semibold transition-all border border-rose-200" title="এই খাতাটি মুছে ফেলুন">
                     <i class="ph-bold ph-trash text-sm"></i> <span id="btn-delete-person">খাতা ডিলিট করুন</span>
@@ -147,7 +136,6 @@
                 </div>
             </div>
 
-            <!-- Transaction Form -->
             <form id="addTransactionForm" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2.5 mb-4 bg-slate-50 p-3 sm:p-4 rounded-xl border border-slate-200/85">
                 <input type="hidden" id="editingTransId" value="">
                 <div>
@@ -179,7 +167,6 @@
                 </div>
             </form>
 
-            <!-- Transactions Table -->
             <div class="overflow-x-auto w-full">
                 <table class="w-full text-left border-collapse text-xs sm:text-sm">
                     <thead>
@@ -191,18 +178,13 @@
                             <th class="py-2.5 px-2 sm:px-3 text-center" id="tbl-action">অ্যাকশন</th>
                         </tr>
                     </thead>
-                    <tbody id="personTransTable" class="text-slate-700 divide-y divide-slate-100">
-                        <!-- Dynamic Rows -->
-                    </tbody>
+                    <tbody id="personTransTable" class="text-slate-700 divide-y divide-slate-100"></tbody>
                 </table>
             </div>
-            
-            <!-- Pagination Controls -->
+
             <div id="paginationContainer" class="flex items-center justify-between pt-3 mt-3 border-t border-slate-100 text-xs">
                 <span id="pageInfo" class="text-slate-500">Showing page 1 of 1</span>
-                <div class="flex items-center gap-1.5" id="pageButtons">
-                    <!-- Dynamic Page Buttons -->
-                </div>
+                <div class="flex items-center gap-1.5" id="pageButtons"></div>
             </div>
 
             <div id="noTransMsg" class="hidden text-center py-6 text-slate-400 text-xs sm:text-sm">
@@ -211,7 +193,6 @@
         </div>
     </div>
 
-    <!-- Scripting with Direct Cloud Persistence & Realtime Snapshot -->
     <script>
         const firebaseConfig = {
             apiKey: "AIzaSyBe7KtGBjhilfCGdjGt0FAmu4dPyctYAsY",
@@ -228,6 +209,9 @@
         const auth = firebase.auth();
         const db = firebase.firestore();
 
+        // ফিক্স ১: মোবাইল নেটওয়ার্কে সংযোগ আটকে গেলে স্বয়ংক্রিয়ভাবে long-polling ব্যবহার করবে
+        db.settings({ experimentalAutoDetectLongPolling: true, merge: true });
+
         let currentUser = null;
         let ledgerData = { persons: [] };
         let activePersonId = null;
@@ -235,6 +219,48 @@
         const rowsPerPage = 10;
         let currentLang = localStorage.getItem('cybrfix_smart_khata_lang') || 'bn';
         let unsubscribeSnapshot = null;
+        let cloudReady = false; // সার্ভার থেকে ডাটা নিশ্চিত না হওয়া পর্যন্ত false
+        const GUEST_KEY = 'cybrfix_smart_khata_offline';
+        let pendingGuest = null;
+
+        // গেস্ট মোড: ডাটা শুধু এই ডিভাইসের localStorage-এ
+        function loadGuest() {
+            try {
+                const d = JSON.parse(localStorage.getItem(GUEST_KEY));
+                if (d && Array.isArray(d.persons)) return d;
+            } catch (e) {}
+            return { persons: [] };
+        }
+        function saveGuest() {
+            try { localStorage.setItem(GUEST_KEY, JSON.stringify(ledgerData)); }
+            catch (e) { alert('Local save error: ' + e.message); }
+        }
+
+        // লগইনের পর গেস্ট ডাটা ক্লাউডে যোগ করা
+        function mergeGuestIfAny(docRef) {
+            if (!pendingGuest || !pendingGuest.persons || pendingGuest.persons.length === 0) {
+                pendingGuest = null;
+                return;
+            }
+            const guest = pendingGuest;
+            pendingGuest = null;
+            if (ledgerData.persons.length === 0 || confirm(translations[currentLang].mergeAsk)) {
+                const used = new Set(ledgerData.persons.map(p => p.id));
+                guest.persons.forEach(p => {
+                    if (used.has(p.id)) p.id = Date.now() + Math.floor(Math.random() * 1000000);
+                    used.add(p.id);
+                    ledgerData.persons.push(p);
+                });
+                docRef.set({
+                    ledgerData: ledgerData,
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                }).then(() => {
+                    localStorage.removeItem(GUEST_KEY);
+                }).catch((err) => {
+                    alert("Save error: " + err.code + " - " + err.message);
+                });
+            }
+        }
 
         const translations = {
             bn: {
@@ -242,7 +268,12 @@
                 subtitle: "ব্যক্তিভিত্তিক খাতা ও সহজ লেনদেন ট্র্যাকার",
                 badge: "Developed by Cybrfix",
                 loginBtn: "জিমেইল লগইন",
-                syncText: "আপনি অফলাইন মোডে আছেন। ডাটা ক্লাউডে সুরক্ষিত রাখতে জিমেইল দিয়ে লগইন করুন।",
+                syncText: "গেস্ট মোড: ডাটা শুধু এই ডিভাইসে সেভ হচ্ছে। মোবাইল হারালে ডাটা হারাবে, তাই ক্লাউডে রাখতে জিমেইল লগইন করুন।",
+                connecting: "ক্লাউডের সাথে সংযোগ হচ্ছে...",
+                synced: "ক্লাউড সিঙ্ক সম্পন্ন ✓",
+                notReady: "ক্লাউড সিঙ্ক এখনো শেষ হয়নি, একটু অপেক্ষা করুন।",
+                mergeAsk: "এই ডিভাইসের গেস্ট ডাটা আপনার ক্লাউড খাতায় যোগ করতে চান? (OK = যোগ হবে, Cancel = গেস্ট ডাটা শুধু ডিভাইসেই থাকবে)",
+                loginFirst: "ডাটা সেভ করতে আগে জিমেইল দিয়ে লগইন করুন।",
                 totalGet: "পাওনা ( পাবো )",
                 totalGive: "দেনা ( দিতে হবে )",
                 totalBalance: "ব্যালেন্স",
@@ -266,7 +297,7 @@
                 tblAmount: "পরিমাণ",
                 tblAction: "অ্যাকশন",
                 noTransMsg: "এই ব্যক্তির সাথে এখনও কোনো লেনদেন রেকর্ড হয়নি।",
-                backBtn: "তালিকায় ফিরে যান",
+                backBtn: "তালিকায় ফিরে যান",
                 deletePersonBtn: "খাতা ডিলিট করুন",
                 giveText: "দিলাম",
                 receiveText: "পেলাম",
@@ -281,7 +312,12 @@
                 subtitle: "Personal Khata & Transaction Tracker",
                 badge: "Developed by Cybrfix",
                 loginBtn: "Google Login",
-                syncText: "You are in offline mode. Login with Google to secure your data in cloud.",
+                syncText: "Guest mode: data is saved only on this device. Login with Google to back it up to the cloud.",
+                connecting: "Connecting to cloud...",
+                synced: "Cloud sync complete ✓",
+                notReady: "Cloud sync not ready yet. Please wait.",
+                mergeAsk: "Add this device's guest data to your cloud ledger? (OK = add, Cancel = guest data stays on this device only)",
+                loginFirst: "Please login with Google first to save data.",
                 totalGet: "Receivable",
                 totalGive: "Payable",
                 totalBalance: "Balance",
@@ -317,10 +353,20 @@
             }
         };
 
+        function setBanner(text, kind) {
+            const el = document.getElementById('sync-banner');
+            const colors = {
+                ok: "bg-emerald-50 border border-emerald-200 text-emerald-800",
+                warn: "bg-amber-50 border border-amber-200 text-amber-800"
+            };
+            el.className = colors[kind] + " px-3 py-2 rounded-xl text-xs mb-4 flex items-center justify-between shadow-sm";
+            document.getElementById('sync-banner-text').textContent = text;
+        }
+
         function switchLanguage(lang) {
             currentLang = lang;
             localStorage.setItem('cybrfix_smart_khata_lang', lang);
-            
+
             document.getElementById('lang-bn').className = lang === 'bn' ? 'px-2.5 py-1 text-xs font-semibold rounded-lg transition-all bg-indigo-600 text-white shadow-sm' : 'px-2.5 py-1 text-xs font-semibold rounded-lg transition-all text-slate-600 hover:text-slate-900';
             document.getElementById('lang-en').className = lang === 'en' ? 'px-2.5 py-1 text-xs font-semibold rounded-lg transition-all bg-indigo-600 text-white shadow-sm' : 'px-2.5 py-1 text-xs font-semibold rounded-lg transition-all text-slate-600 hover:text-slate-900';
 
@@ -329,8 +375,10 @@
             document.getElementById('app-subtitle').textContent = t.subtitle;
             document.getElementById('brand-badge').textContent = t.badge;
             document.getElementById('login-text').textContent = t.loginBtn;
-            if(!currentUser) {
+            if (!currentUser) {
                 document.getElementById('sync-banner-text').textContent = t.syncText;
+            } else if (cloudReady) {
+                document.getElementById('sync-banner-text').textContent = t.synced;
             }
             document.getElementById('lbl-total-get').textContent = t.totalGet;
             document.getElementById('lbl-total-give').textContent = t.totalGive;
@@ -355,40 +403,43 @@
             document.getElementById('noTransMsg').textContent = t.noTransMsg;
             document.getElementById('btn-back').textContent = t.backBtn;
             document.getElementById('btn-delete-person').textContent = t.deletePersonBtn;
-            
+
             const submitBtn = document.getElementById('formSubmitBtn');
-            if(editingTransIdEl.value) {
-                submitBtn.textContent = t.updateTxBtn;
-            } else {
-                submitBtn.textContent = t.addTxBtn;
-            }
+            submitBtn.textContent = editingTransIdEl.value ? t.updateTxBtn : t.addTxBtn;
 
             renderPersonList();
-            if(activePersonId) renderActiveLedger();
+            if (activePersonId) renderActiveLedger();
             renderGlobalSummary();
         }
 
         function loginWithGoogle() {
             const provider = new firebase.auth.GoogleAuthProvider();
             auth.signInWithPopup(provider).catch((error) => {
-                alert("Login Failed: " + error.message);
+                // মোবাইলে পপআপ ব্লক হলে রিডাইরেক্টে চেষ্টা করবে
+                if (error.code === 'auth/popup-blocked' || error.code === 'auth/operation-not-supported-in-this-environment') {
+                    auth.signInWithRedirect(provider);
+                } else if (error.code !== 'auth/popup-closed-by-user' && error.code !== 'auth/cancelled-popup-request') {
+                    alert("Login Failed: " + error.code + " - " + error.message);
+                }
             });
         }
 
         function logoutUser() {
-            if (unsubscribeSnapshot) unsubscribeSnapshot();
+            if (unsubscribeSnapshot) { unsubscribeSnapshot(); unsubscribeSnapshot = null; }
+            const uid = currentUser ? currentUser.uid : null;
             auth.signOut().then(() => {
                 currentUser = null;
-                ledgerData = { persons: [] };
+                cloudReady = false;
+                pendingGuest = null;
+                ledgerData = loadGuest();
                 activePersonId = null;
-                localStorage.removeItem('cybrfix_smart_khata');
+                if (uid) localStorage.removeItem('cybrfix_smart_khata_' + uid);
                 renderPersonList();
                 renderGlobalSummary();
                 goBackToHome();
             });
         }
 
-        // ফায়ারবেস অথ স্টেট চেঞ্জ
         auth.onAuthStateChanged((user) => {
             currentUser = user;
             if (user) {
@@ -396,71 +447,100 @@
                 document.getElementById('user-profile').classList.remove('hidden');
                 document.getElementById('user-avatar').src = user.photoURL || 'https://via.placeholder.com/150';
                 document.getElementById('user-name').textContent = user.displayName || user.email;
-                document.getElementById('sync-banner').className = "bg-emerald-50 border border-emerald-200 text-emerald-800 px-3 py-2 rounded-xl text-xs mb-4 flex items-center justify-between shadow-sm";
-                document.getElementById('sync-banner-text').textContent = currentLang === 'bn' ? `স্বাগতম, ${user.displayName || 'ব্যবহারকারী'}! আপনার ডাটা ক্লাউডে সুরক্ষিত আছে।` : `Welcome, ${user.displayName || 'User'}! Data safely synced.`;
-                
-                // ক্লাউড থেকে রিয়েলটাইম লাইভ সিঙ্ক শুরু করা
-                initCloudSync(user.uid);
-            } else {
-                document.getElementById('login-btn').classList.remove('hidden');
-                document.getElementById('user-profile').classList.add('hidden');
-                document.getElementById('sync-banner').className = "bg-amber-50 border border-amber-200 text-amber-800 px-3 py-2 rounded-xl text-xs mb-4 flex items-center justify-between shadow-sm";
-                document.getElementById('sync-banner-text').textContent = translations[currentLang].syncText;
-                
+                setBanner(translations[currentLang].connecting, 'warn');
+                pendingGuest = loadGuest();
                 ledgerData = { persons: [] };
                 renderPersonList();
                 renderGlobalSummary();
-                if(activePersonId) goBackToHome();
+                initCloudSync(user.uid);
+            } else {
+                if (unsubscribeSnapshot) { unsubscribeSnapshot(); unsubscribeSnapshot = null; }
+                cloudReady = false;
+                document.getElementById('login-btn').classList.remove('hidden');
+                document.getElementById('user-profile').classList.add('hidden');
+                setBanner(translations[currentLang].syncText, 'warn');
+
+                pendingGuest = null;
+                ledgerData = loadGuest();
+                renderPersonList();
+                renderGlobalSummary();
+                if (activePersonId) goBackToHome();
             }
         });
 
-        // ফায়ারস্টোর থেকে রিয়েলটাইম লাইভ ডাটা কানেকশন
+        // ফিক্স ২: ক্যাশের ফাঁকা স্ন্যাপশটে কখনো ক্লাউডে লিখবে না
         function initCloudSync(uid) {
             if (unsubscribeSnapshot) unsubscribeSnapshot();
-
+            cloudReady = false;
             const docRef = db.collection("users").doc(uid);
 
-            unsubscribeSnapshot = docRef.onSnapshot((doc) => {
+            unsubscribeSnapshot = docRef.onSnapshot({ includeMetadataChanges: true }, (doc) => {
+                const t = translations[currentLang];
+
+                // সার্ভার থেকে উত্তর আসার আগের ফাঁকা ক্যাশ উপেক্ষা
+                if (doc.metadata.fromCache && !doc.exists) {
+                    setBanner(t.connecting, 'warn');
+                    return;
+                }
+
                 if (doc.exists && doc.data().ledgerData) {
-                    // ক্লাউডে ডাটা থাকলে সরাসরি সেটাই নিয়ে নেব (রিফ্রেশ দিলেও আর মুছবে না)
                     ledgerData = doc.data().ledgerData;
-                } else {
-                    // ক্লাউডে ডাটা না থাকলে লোকালস্টোরেজ বা নতুন ফাঁকা ডাটা দিয়ে ক্লাউড ইনিশিয়ালাইজ করব
-                    const localSaved = localStorage.getItem('cybrfix_smart_khata_' + uid);
-                    ledgerData = localSaved ? JSON.parse(localSaved) : { persons: [] };
+                    if (!Array.isArray(ledgerData.persons)) ledgerData.persons = [];
+                    if (!doc.metadata.fromCache) {
+                        cloudReady = true;
+                        setBanner(t.synced, 'ok');
+                    }
+                } else if (!doc.metadata.fromCache) {
+                    // সার্ভার নিশ্চিত করেছে এই ইউজারের কোনো ডাটা নেই (সত্যিকারের নতুন ইউজার)
+                    ledgerData = { persons: [] };
                     docRef.set({
                         ledgerData: ledgerData,
                         updatedAt: firebase.firestore.FieldValue.serverTimestamp()
                     });
+                    cloudReady = true;
+                    setBanner(t.synced, 'ok');
                 }
-                localStorage.setItem('cybrfix_smart_khata_' + uid, JSON.stringify(ledgerData));
+
+                if (cloudReady) mergeGuestIfAny(docRef);
+
                 renderPersonList();
                 renderGlobalSummary();
-                if(activePersonId) renderActiveLedger();
+                if (activePersonId) renderActiveLedger();
             }, (error) => {
                 console.error("Cloud sync error:", error);
+                alert("Sync error: " + error.code + " - " + error.message);
             });
         }
 
-        // সেভ করার সাথে সাথে ফায়ারবেসে পার্মানেন্টলি পুশ করার ফাংশন
+        // ফিক্স ৩: সার্ভার সিঙ্ক না হওয়া পর্যন্ত সেভ ব্লক
         function saveAndRender() {
-            if (currentUser) {
-                db.collection("users").doc(currentUser.uid).set({
-                    ledgerData: ledgerData,
-                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-                }).then(() => {
-                    console.log("Data successfully saved to Firebase!");
-                }).catch((err) => {
-                    console.error("Error saving to cloud: ", err);
-                });
-                localStorage.setItem('cybrfix_smart_khata_' + currentUser.uid, JSON.stringify(ledgerData));
-            } else {
-                localStorage.setItem('cybrfix_smart_khata_offline', JSON.stringify(ledgerData));
+            const t = translations[currentLang];
+
+            if (!currentUser) {
+                // গেস্ট মোড: শুধু এই ডিভাইসে সেভ
+                saveGuest();
+                renderPersonList();
+                if (activePersonId) renderActiveLedger();
+                renderGlobalSummary();
+                return true;
+            }
+            if (!cloudReady) {
+                alert(t.notReady);
+                return false;
             }
 
+            db.collection("users").doc(currentUser.uid).set({
+                ledgerData: ledgerData,
+                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+            }).catch((err) => {
+                console.error("Error saving to cloud: ", err);
+                alert("Save error: " + err.code + " - " + err.message);
+            });
+
             renderPersonList();
-            if(activePersonId) renderActiveLedger();
+            if (activePersonId) renderActiveLedger();
             renderGlobalSummary();
+            return true;
         }
 
         const addPersonForm = document.getElementById('addPersonForm');
@@ -487,6 +567,10 @@
 
         addPersonForm.addEventListener('submit', function(e) {
             e.preventDefault();
+            if (currentUser && !cloudReady) {
+                alert(translations[currentLang].notReady);
+                return;
+            }
             const name = document.getElementById('newPersonName').value.trim();
             const phone = document.getElementById('newPersonPhone').value.trim();
 
@@ -498,29 +582,32 @@
             };
 
             ledgerData.persons.push(newPerson);
-            saveAndRender();
-            addPersonForm.reset();
-            selectPerson(newPerson.id);
+            if (saveAndRender()) {
+                addPersonForm.reset();
+                selectPerson(newPerson.id);
+            } else {
+                ledgerData.persons = ledgerData.persons.filter(p => p.id !== newPerson.id);
+            }
         });
 
         addTransactionForm.addEventListener('submit', function(e) {
             e.preventDefault();
-            if(!activePersonId) return;
+            if (!activePersonId) return;
 
             const editId = editingTransIdEl.value;
             const type = document.getElementById('transType').value;
             const amount = parseFloat(document.getElementById('transAmount').value);
             const date = transDateEl.value.trim() || getDefaultDate();
-            
+
             const t = translations[currentLang];
             const defaultNote = (type === 'give') ? t.defaultGiveNote : t.defaultReceiveNote;
             const note = document.getElementById('transNote').value.trim() || defaultNote;
 
             const person = ledgerData.persons.find(p => p.id === activePersonId);
-            if(person) {
-                if(editId) {
+            if (person) {
+                if (editId) {
                     const trans = person.transactions.find(t => t.id == editId);
-                    if(trans) {
+                    if (trans) {
                         trans.type = type;
                         trans.amount = amount;
                         trans.date = date;
@@ -535,8 +622,7 @@
                         note
                     });
                 }
-                saveAndRender();
-                resetForm();
+                if (saveAndRender()) resetForm();
             }
         });
 
@@ -552,9 +638,9 @@
 
         function editTransaction(transId) {
             const person = ledgerData.persons.find(p => p.id === activePersonId);
-            if(person) {
+            if (person) {
                 const trans = person.transactions.find(t => t.id === transId);
-                if(trans) {
+                if (trans) {
                     editingTransIdEl.value = trans.id;
                     document.getElementById('transType').value = trans.type;
                     document.getElementById('transAmount').value = trans.amount;
@@ -575,7 +661,7 @@
             resetForm();
             renderPersonList();
             renderActiveLedger();
-            
+
             homeView.classList.add('hidden');
             ledgerView.classList.remove('hidden');
             window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -591,10 +677,14 @@
 
         function deleteActivePerson() {
             const confirmMsg = currentLang === 'bn' ? 'আপনি কি নিশ্চিতভাবে এই ব্যক্তির পুরো খাতাটি মুছে ফেলতে চান?' : 'Are you sure you want to delete this person\'s ledger?';
-            if(confirm(confirmMsg)) {
+            if (confirm(confirmMsg)) {
+                const backup = ledgerData.persons;
                 ledgerData.persons = ledgerData.persons.filter(p => p.id !== activePersonId);
-                saveAndRender();
-                goBackToHome();
+                if (saveAndRender()) {
+                    goBackToHome();
+                } else {
+                    ledgerData.persons = backup;
+                }
             }
         }
 
@@ -603,11 +693,11 @@
             const query = searchPersonEl.value.toLowerCase();
             const t = translations[currentLang];
 
-            const filtered = ledgerData.persons.filter(p => 
+            const filtered = ledgerData.persons.filter(p =>
                 p.name.toLowerCase().includes(query) || (p.phone && p.phone.includes(query))
             );
 
-            if(filtered.length === 0) {
+            if (filtered.length === 0) {
                 personListEl.innerHTML = `<span class="text-xs text-slate-400">${currentLang === 'bn' ? 'কোনো নাম পাওয়া যায়নি।' : 'No names found.'}</span>`;
                 return;
             }
@@ -617,31 +707,43 @@
                 const btn = document.createElement('button');
                 btn.type = 'button';
                 btn.onclick = () => selectPerson(p.id);
-                btn.className = `px-3.5 py-2 rounded-xl text-xs font-semibold flex items-center justify-between border transition-all bg-slate-50 hover:bg-indigo-50/50 text-slate-700 border-slate-200`;
-                
+                btn.className = `px-3.5 py-2 rounded-xl text-xs font-semibold flex items-center justify-between gap-2 border transition-all bg-slate-50 hover:bg-indigo-50/50 text-slate-700 border-slate-200`;
+
                 let statusColor = bal > 0 ? 'text-emerald-600 font-bold' : (bal < 0 ? 'text-rose-600 font-bold' : 'text-slate-400');
                 let statusLabel = bal > 0 ? `(${t.statusGet})` : (bal < 0 ? `(${t.statusGive})` : '');
 
-                btn.innerHTML = `
-                    <span class="flex items-center gap-1.5"><i class="ph-bold ph-user text-indigo-500"></i> ${p.name}</span>
-                    <span class="text-xs ${statusColor}">৳${Math.abs(bal)} ${statusLabel}</span>
-                `;
+                const nameSpan = document.createElement('span');
+                nameSpan.className = 'flex items-center gap-1.5';
+                nameSpan.innerHTML = '<i class="ph-bold ph-user text-indigo-500"></i> ';
+                nameSpan.appendChild(document.createTextNode(p.name));
+
+                const balSpan = document.createElement('span');
+                balSpan.className = 'text-xs ' + statusColor;
+                balSpan.textContent = `৳${Math.abs(bal)} ${statusLabel}`;
+
+                btn.appendChild(nameSpan);
+                btn.appendChild(balSpan);
                 personListEl.appendChild(btn);
             });
         }
 
         function getPersonBalance(person) {
-            let balance = 0; 
-            person.transactions.forEach(t => {
-                if(t.type === 'give') balance += t.amount;
-                if(t.type === 'receive') balance -= t.amount;
+            let balance = 0;
+            (person.transactions || []).forEach(t => {
+                if (t.type === 'give') balance += t.amount;
+                if (t.type === 'receive') balance -= t.amount;
             });
             return balance;
         }
 
+        function escapeHtml(s) {
+            return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+        }
+
         function renderActiveLedger() {
             const person = ledgerData.persons.find(p => p.id === activePersonId);
-            if(!person) return;
+            if (!person) return;
+            if (!person.transactions) person.transactions = [];
 
             activePersonNameEl.textContent = person.name;
             activePersonPhoneEl.textContent = person.phone ? `📱 ${person.phone}` : '';
@@ -649,10 +751,10 @@
             const bal = getPersonBalance(person);
             const t = translations[currentLang];
 
-            if(bal > 0) {
+            if (bal > 0) {
                 activePersonBalanceEl.textContent = `${t.statusGet} ৳ ${bal.toLocaleString('en-IN')}`;
                 activePersonBalanceEl.className = 'text-lg sm:text-xl font-black text-emerald-600';
-            } else if(bal < 0) {
+            } else if (bal < 0) {
                 activePersonBalanceEl.textContent = `${t.statusGive} ৳ ${Math.abs(bal).toLocaleString('en-IN')}`;
                 activePersonBalanceEl.className = 'text-lg sm:text-xl font-black text-rose-600';
             } else {
@@ -661,8 +763,8 @@
             }
 
             personTransTable.innerHTML = '';
-            
-            if(person.transactions.length === 0) {
+
+            if (person.transactions.length === 0) {
                 noTransMsg.classList.remove('hidden');
                 document.getElementById('paginationContainer').classList.add('hidden');
             } else {
@@ -671,7 +773,7 @@
 
                 const totalPages = Math.ceil(person.transactions.length / rowsPerPage);
                 if (currentPage > totalPages) currentPage = totalPages;
-                
+
                 const start = (currentPage - 1) * rowsPerPage;
                 const paginatedTransactions = person.transactions.slice(start, start + rowsPerPage);
 
@@ -681,20 +783,21 @@
 
                     let isGive = (tx.type === 'give');
                     let typeText = isGive ? t.giveText : t.receiveText;
-                    let typeBadge = isGive 
+                    let typeBadge = isGive
                         ? `<span class="inline-block px-1.5 py-0.5 rounded text-[10px] sm:text-xs font-bold bg-emerald-50 text-emerald-600 whitespace-nowrap">${typeText}</span>`
                         : `<span class="inline-block px-1.5 py-0.5 rounded text-[10px] sm:text-xs font-bold bg-rose-50 text-rose-600 whitespace-nowrap">${typeText}</span>`;
 
                     let displayNote = tx.note;
-                    if(tx.note === 'দিলাম' || tx.note === 'Gave') {
+                    if (tx.note === 'দিলাম' || tx.note === 'Gave') {
                         displayNote = t.defaultGiveNote;
-                    } else if(tx.note === 'পেলাম' || tx.note === 'Received') {
+                    } else if (tx.note === 'পেলাম' || tx.note === 'Received') {
                         displayNote = t.defaultReceiveNote;
                     }
+                    const safeNote = escapeHtml(displayNote);
 
                     row.innerHTML = `
-                        <td class="py-2 px-2 sm:px-3 text-[11px] sm:text-xs text-slate-500 font-mono whitespace-nowrap">${tx.date}</td>
-                        <td class="py-2 px-2 sm:px-3 text-slate-700 text-xs font-medium max-w-[90px] sm:max-w-xs truncate" title="${displayNote}">${displayNote}</td>
+                        <td class="py-2 px-2 sm:px-3 text-[11px] sm:text-xs text-slate-500 font-mono whitespace-nowrap">${escapeHtml(tx.date)}</td>
+                        <td class="py-2 px-2 sm:px-3 text-slate-700 text-xs font-medium max-w-[90px] sm:max-w-xs truncate" title="${safeNote}">${safeNote}</td>
                         <td class="py-2 px-2 sm:px-3 whitespace-nowrap">${typeBadge}</td>
                         <td class="py-2 px-2 sm:px-3 font-bold text-slate-800 text-xs sm:text-sm text-right whitespace-nowrap">৳ ${tx.amount.toLocaleString('en-IN')}</td>
                         <td class="py-2 px-2 sm:px-3 text-center space-x-1 whitespace-nowrap">
@@ -725,11 +828,11 @@
             const prevBtn = document.createElement('button');
             prevBtn.textContent = '«';
             prevBtn.disabled = currentPage === 1;
-            prevBtn.onclick = () => { if(currentPage > 1) { currentPage--; renderActiveLedger(); } };
+            prevBtn.onclick = () => { if (currentPage > 1) { currentPage--; renderActiveLedger(); } };
             prevBtn.className = `px-2 py-0.5 rounded-lg border text-xs font-semibold ${currentPage === 1 ? 'bg-slate-50 text-slate-300 border-slate-100 cursor-not-allowed' : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'}`;
             pageButtons.appendChild(prevBtn);
 
-            for(let i = 1; i <= totalPages; i++) {
+            for (let i = 1; i <= totalPages; i++) {
                 const pageBtn = document.createElement('button');
                 pageBtn.textContent = i;
                 pageBtn.onclick = () => { currentPage = i; renderActiveLedger(); };
@@ -740,19 +843,23 @@
             const nextBtn = document.createElement('button');
             nextBtn.textContent = '»';
             nextBtn.disabled = currentPage === totalPages;
-            nextBtn.onclick = () => { if(currentPage < totalPages) { currentPage++; renderActiveLedger(); } };
+            nextBtn.onclick = () => { if (currentPage < totalPages) { currentPage++; renderActiveLedger(); } };
             nextBtn.className = `px-2 py-0.5 rounded-lg border text-xs font-semibold ${currentPage === totalPages ? 'bg-slate-50 text-slate-300 border-slate-100 cursor-not-allowed' : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'}`;
             pageButtons.appendChild(nextBtn);
         }
 
         function deleteTransaction(transId) {
             const confirmMsg = currentLang === 'bn' ? 'আপনি কি এই এন্ট্রিটি মুছে ফেলতে চান?' : 'Are you sure you want to delete this entry?';
-            if(confirm(confirmMsg)) {
+            if (confirm(confirmMsg)) {
                 const person = ledgerData.persons.find(p => p.id === activePersonId);
-                if(person) {
+                if (person) {
+                    const backup = person.transactions;
                     person.transactions = person.transactions.filter(t => t.id !== transId);
-                    saveAndRender();
-                    resetForm();
+                    if (saveAndRender()) {
+                        resetForm();
+                    } else {
+                        person.transactions = backup;
+                    }
                 }
             }
         }
@@ -763,13 +870,13 @@
 
             ledgerData.persons.forEach(p => {
                 const bal = getPersonBalance(p);
-                if(bal > 0) totalReceivable += bal;
-                if(bal < 0) totalPayable += Math.abs(bal);
+                if (bal > 0) totalReceivable += bal;
+                if (bal < 0) totalPayable += Math.abs(bal);
             });
 
             document.getElementById('totalReceivable').textContent = `৳ ${totalReceivable.toLocaleString('en-IN')}`;
             document.getElementById('totalPayable').textContent = `৳ ${totalPayable.toLocaleString('en-IN')}`;
-            
+
             const net = totalReceivable - totalPayable;
             const netEl = document.getElementById('netBalance');
             netEl.textContent = `৳ ${net.toLocaleString('en-IN')}`;
@@ -787,21 +894,29 @@
         }
 
         function importData(event) {
+            const file = event.target.files[0];
+            if (!file) return;
             const fileReader = new FileReader();
-            if(event.target.files[0]) {
-                fileReader.readAsText(event.target.files[0], "UTF-8");
-                fileReader.onload = function(e) {
-                    try {
-                        ledgerData = JSON.parse(e.target.result);
-                        saveAndRender();
+            fileReader.onload = function(e) {
+                try {
+                    const parsed = JSON.parse(e.target.result);
+                    if (!parsed || !Array.isArray(parsed.persons)) throw new Error('invalid');
+                    const old = ledgerData;
+                    ledgerData = parsed;
+                    if (saveAndRender()) {
                         alert(currentLang === 'bn' ? 'ডাটা সফলভাবে রিস্টোর করা হয়েছে!' : 'Data successfully restored!');
-                    } catch (error) {
-                        alert(currentLang === 'bn' ? 'ভুল ফাইল ফরম্যাট!' : 'Invalid file format!');
+                    } else {
+                        ledgerData = old;
                     }
+                } catch (error) {
+                    alert(currentLang === 'bn' ? 'ভুল ফাইল ফরম্যাট!' : 'Invalid file format!');
                 }
-            }
+                event.target.value = '';
+            };
+            fileReader.readAsText(file, "UTF-8");
         }
 
+        ledgerData = loadGuest();
         switchLanguage(currentLang);
     </script>
 </body>
