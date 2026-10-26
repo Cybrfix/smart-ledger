@@ -16,19 +16,73 @@
 
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .modal-overlay {
+            background-color: rgba(15, 23, 42, 0.6); /* slate-900 with opacity */
+            backdrop-filter: blur(4px);
+        }
+        /* Custom scrollbar for sky blue theme */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #f0f9ff; }
+        ::-webkit-scrollbar-thumb { background: #bae6fd; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #7dd3fc; }
     </style>
 </head>
-<body class="bg-slate-100 min-h-screen py-4 px-2 sm:px-6 lg:px-8">
+<body class="bg-sky-50 min-h-screen py-4 px-2 sm:px-6 lg:px-8 text-slate-800">
+
+    <!-- 🔥 সিঙ্ক কনফ্লিক্ট মডাল (লগইনের আগে দেখাবে) -->
+    <div id="syncModal" class="fixed inset-0 modal-overlay hidden z-50 flex items-center justify-center p-4 transition-opacity">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden transform scale-100 transition-transform border border-sky-100">
+            <div class="bg-sky-600 p-5 text-center relative">
+                <div class="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <i class="ph-bold ph-warning-circle text-2xl text-white"></i>
+                </div>
+                <h3 class="text-lg font-bold text-white">ডেটা সিঙ্ক্রোনাইজেশন</h3>
+                <p class="text-sky-100 text-xs mt-1 leading-relaxed">আপনার এই ডিভাইসে কিছু অফলাইন ডেটা রয়েছে। জিমেইল লগইন করার আগে আপনি কী করতে চান?</p>
+            </div>
+            <div class="p-4 space-y-2.5">
+                <button onclick="resolveConflict('merge')" class="w-full text-left bg-white hover:bg-sky-50 border border-sky-100 p-3 rounded-xl transition-all group">
+                    <div class="flex items-center gap-3">
+                        <div class="bg-sky-100 p-2 rounded-lg text-sky-600 group-hover:scale-110 transition-transform"><i class="ph-bold ph-git-merge text-lg"></i></div>
+                        <div>
+                            <h4 class="text-sm font-bold text-slate-800">ডাটা মার্জ করুন (Merge)</h4>
+                            <p class="text-[11px] text-slate-500 leading-tight mt-0.5">লোকাল এবং ক্লাউডের সব ডেটা একসাথে যুক্ত হয়ে যাবে। কোনো ডেটা মুছবে না।</p>
+                        </div>
+                    </div>
+                </button>
+                <button onclick="resolveConflict('export')" class="w-full text-left bg-white hover:bg-emerald-50 border border-emerald-100 p-3 rounded-xl transition-all group">
+                    <div class="flex items-center gap-3">
+                        <div class="bg-emerald-100 p-2 rounded-lg text-emerald-600 group-hover:scale-110 transition-transform"><i class="ph-bold ph-download-simple text-lg"></i></div>
+                        <div>
+                            <h4 class="text-sm font-bold text-slate-800">এক্সপোর্ট ও ক্লাউড লোড</h4>
+                            <p class="text-[11px] text-slate-500 leading-tight mt-0.5">লোকাল ডাটা .json ফাইলে ডাউনলোড হবে এবং ক্লাউডের ডাটা লোড হবে।</p>
+                        </div>
+                    </div>
+                </button>
+                <button onclick="resolveConflict('cloud')" class="w-full text-left bg-white hover:bg-rose-50 border border-rose-100 p-3 rounded-xl transition-all group">
+                    <div class="flex items-center gap-3">
+                        <div class="bg-rose-100 p-2 rounded-lg text-rose-600 group-hover:scale-110 transition-transform"><i class="ph-bold ph-cloud text-lg"></i></div>
+                        <div>
+                            <h4 class="text-sm font-bold text-slate-800">শুধু ক্লাউড ডাটা রাখুন</h4>
+                            <p class="text-[11px] text-slate-500 leading-tight mt-0.5">লোকালের ডাটা মুছে যাবে এবং শুধু জিমেইলের ক্লাউড ডাটা দেখাবে।</p>
+                        </div>
+                    </div>
+                </button>
+            </div>
+            <div class="bg-sky-50 p-3 text-center border-t border-sky-100">
+                <button onclick="closeModal()" class="text-slate-500 text-xs font-semibold hover:text-slate-800 transition-colors">বাতিল করুন</button>
+            </div>
+        </div>
+    </div>
 
     <div class="max-w-5xl mx-auto">
         <!-- Header -->
-        <header class="bg-white p-3 sm:p-5 rounded-2xl shadow-sm border border-slate-200 mb-4 flex flex-col md:flex-row justify-between items-center gap-3">
+        <header class="bg-white p-3 sm:p-5 rounded-2xl shadow-sm border border-sky-100 mb-4 flex flex-col md:flex-row justify-between items-center gap-3">
             <div class="text-center md:text-left">
                 <div class="flex flex-wrap items-center justify-center md:justify-start gap-2">
                     <h1 class="text-xl sm:text-2xl font-extrabold text-slate-800 flex items-center gap-2">
-                        <i class="ph-bold ph-book-open text-indigo-600"></i> <span id="app-title">স্মার্ট লেনদেন খাতা</span>
+                        <i class="ph-bold ph-book-open text-sky-600"></i> <span id="app-title">স্মার্ট লেনদেন খাতা</span>
                     </h1>
-                    <span class="text-[10px] bg-indigo-50 text-indigo-600 px-2 py-0.5 rounded-full border border-indigo-200 font-semibold" id="brand-badge">Developed by Cybrfix</span>
+                    <span class="text-[10px] bg-sky-50 text-sky-600 px-2 py-0.5 rounded-full border border-sky-200 font-semibold" id="brand-badge">Developed by Cybrfix</span>
                 </div>
                 <p class="text-slate-500 mt-0.5 text-xs" id="app-subtitle">ব্যক্তিভিত্তিক খাতা ও সহজ লেনদেন ট্র্যাকার</p>
             </div>
@@ -36,21 +90,21 @@
             <!-- Header Controls -->
             <div class="flex flex-wrap items-center justify-center gap-2">
                 <!-- Language Switcher -->
-                <div class="bg-slate-100 rounded-xl p-1 flex items-center border border-slate-200">
-                    <button onclick="switchLanguage('bn')" id="lang-bn" class="px-2.5 py-1 text-xs font-semibold rounded-lg transition-all bg-indigo-600 text-white shadow-sm">বাংলা</button>
+                <div class="bg-sky-50 rounded-xl p-1 flex items-center border border-sky-100">
+                    <button onclick="switchLanguage('bn')" id="lang-bn" class="px-2.5 py-1 text-xs font-semibold rounded-lg transition-all bg-sky-600 text-white shadow-sm">বাংলা</button>
                     <button onclick="switchLanguage('en')" id="lang-en" class="px-2.5 py-1 text-xs font-semibold rounded-lg transition-all text-slate-600 hover:text-slate-900">English</button>
                 </div>
 
                 <!-- Google Auth Button / User Profile -->
                 <div id="auth-container">
-                    <button onclick="loginWithGoogle()" id="login-btn" class="flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-xl text-xs font-semibold shadow-md shadow-indigo-100 transition-all">
+                    <button onclick="handleLoginClick()" id="login-btn" class="flex items-center gap-1.5 bg-sky-600 hover:bg-sky-700 text-white px-3 py-1.5 rounded-xl text-xs font-semibold shadow-md shadow-sky-200 transition-all">
                         <i class="ph-bold ph-google-logo text-sm"></i>
                         <span id="login-text">জিমেইল লগইন</span>
                     </button>
-                    <div id="user-profile" class="hidden flex items-center gap-2 bg-slate-50 px-3 py-1 rounded-xl border border-slate-200">
-                        <img id="user-avatar" src="" alt="User" class="w-5 h-5 rounded-full border border-slate-300">
+                    <div id="user-profile" class="hidden flex items-center gap-2 bg-sky-50 px-3 py-1 rounded-xl border border-sky-200">
+                        <img id="user-avatar" src="" alt="User" class="w-5 h-5 rounded-full border border-sky-300">
                         <span id="user-name" class="text-xs font-semibold text-slate-700 max-w-[80px] truncate"></span>
-                        <button onclick="logoutUser()" class="text-slate-400 hover:text-rose-600 text-sm ml-1" title="লগআউট"><i class="ph-bold ph-sign-out"></i></button>
+                        <button onclick="logoutUser()" class="text-slate-400 hover:text-rose-600 text-sm ml-1 transition-colors" title="লগআউট"><i class="ph-bold ph-sign-out"></i></button>
                     </div>
                 </div>
 
@@ -59,7 +113,7 @@
                     <button onclick="exportData()" class="px-2 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-600 rounded-xl text-xs font-semibold flex items-center gap-1 transition-colors border border-emerald-200" title="ব্যাকআপ">
                         <i class="ph-bold ph-download-simple"></i> <span class="hidden sm:inline">Export</span>
                     </button>
-                    <label class="px-2 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 rounded-xl text-xs font-semibold flex items-center gap-1 transition-colors border border-indigo-200 cursor-pointer" title="ইম্পোর্ট">
+                    <label class="px-2 py-1.5 bg-sky-50 hover:bg-sky-100 text-sky-600 rounded-xl text-xs font-semibold flex items-center gap-1 transition-colors border border-sky-200 cursor-pointer" title="ইম্পোর্ট">
                         <i class="ph-bold ph-upload-simple"></i> <span class="hidden sm:inline">Import</span>
                         <input type="file" id="importFile" accept=".json" onchange="importData(event)" class="hidden">
                     </label>
@@ -71,23 +125,23 @@
         <div id="sync-banner" class="bg-amber-50 border border-amber-200 text-amber-800 px-3 py-2 rounded-xl text-xs mb-4 flex items-center justify-between shadow-sm">
             <div class="flex items-center gap-2">
                 <i class="ph-bold ph-cloud-arrow-up text-base text-amber-600"></i>
-                <span id="sync-banner-text">আপনি অফলাইন মোডে আছেন। ডাটা ক্লাউডে সুরক্ষিত রাখতে জিমেইল দিয়ে লগইন করুন।</span>
+                <span id="sync-banner-text">আপনি অফলাইন মোডে আছেন। ডাটা আপনার ব্রাউজারে সেভ হচ্ছে।</span>
             </div>
         </div>
 
         <!-- Summary Cards -->
         <div class="grid grid-cols-3 gap-2 sm:gap-4 mb-4">
-            <div class="bg-white p-3 sm:p-5 rounded-2xl shadow-sm border border-slate-200 text-center sm:text-left">
+            <div class="bg-white p-3 sm:p-5 rounded-2xl shadow-sm border border-sky-100 text-center sm:text-left">
                 <p class="text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-wider" id="lbl-total-get">পাওনা ( পাবো )</p>
                 <h3 id="totalReceivable" class="text-base sm:text-2xl font-black text-emerald-600 mt-1">৳ 0</h3>
             </div>
-            <div class="bg-white p-3 sm:p-5 rounded-2xl shadow-sm border border-slate-200 text-center sm:text-left">
+            <div class="bg-white p-3 sm:p-5 rounded-2xl shadow-sm border border-sky-100 text-center sm:text-left">
                 <p class="text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-wider" id="lbl-total-give">দেনা ( দিতে হবে )</p>
                 <h3 id="totalPayable" class="text-base sm:text-2xl font-black text-rose-600 mt-1">৳ 0</h3>
             </div>
-            <div class="bg-white p-3 sm:p-5 rounded-2xl shadow-sm border border-slate-200 text-center sm:text-left">
+            <div class="bg-white p-3 sm:p-5 rounded-2xl shadow-sm border border-sky-100 text-center sm:text-left">
                 <p class="text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-wider" id="lbl-total-balance">ব্যালেন্স</p>
-                <h3 id="netBalance" class="text-base sm:text-2xl font-black text-indigo-600 mt-1">৳ 0</h3>
+                <h3 id="netBalance" class="text-base sm:text-2xl font-black text-sky-600 mt-1">৳ 0</h3>
             </div>
         </div>
 
@@ -95,26 +149,26 @@
         <div id="homeView" class="space-y-4">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <!-- Add Person Form -->
-                <div class="bg-white p-4 sm:p-6 rounded-2xl shadow-sm border border-slate-200">
+                <div class="bg-white p-4 sm:p-6 rounded-2xl shadow-sm border border-sky-100">
                     <h2 class="text-md font-bold text-slate-800 mb-3 flex items-center gap-2">
-                        <i class="ph-bold ph-user-plus text-indigo-600"></i> <span id="sec-add-person">নতুন ব্যক্তি যোগ করুন</span>
+                        <i class="ph-bold ph-user-plus text-sky-600"></i> <span id="sec-add-person">নতুন ব্যক্তি যোগ করুন</span>
                     </h2>
                     <form id="addPersonForm" class="space-y-3">
-                        <input type="text" id="newPersonName" required placeholder="ব্যক্তির নাম..." class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-indigo-500">
-                        <input type="text" id="newPersonPhone" placeholder="মোবাইল নম্বর (অপশনাল)..." class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-indigo-500">
-                        <button type="submit" id="btn-save-person" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded-xl text-sm transition-all shadow-md shadow-indigo-100">
+                        <input type="text" id="newPersonName" required placeholder="ব্যক্তির নাম..." class="w-full px-3 py-2 border border-sky-100 rounded-xl text-sm focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 bg-sky-50/30">
+                        <input type="text" id="newPersonPhone" placeholder="মোবাইল নম্বর (অপশনাল)..." class="w-full px-3 py-2 border border-sky-100 rounded-xl text-sm focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 bg-sky-50/30">
+                        <button type="submit" id="btn-save-person" class="w-full bg-sky-600 hover:bg-sky-700 text-white font-semibold py-2 px-4 rounded-xl text-sm transition-all shadow-md shadow-sky-200">
                             ব্যক্তি যুক্ত করুন
                         </button>
                     </form>
                 </div>
 
                 <!-- Person Selection & Search -->
-                <div class="bg-white p-4 sm:p-6 rounded-2xl shadow-sm border border-slate-200 md:col-span-2 flex flex-col justify-between">
+                <div class="bg-white p-4 sm:p-6 rounded-2xl shadow-sm border border-sky-100 md:col-span-2 flex flex-col justify-between">
                     <div>
                         <h2 class="text-md font-bold text-slate-800 mb-3 flex items-center gap-2">
-                            <i class="ph-bold ph-users text-indigo-600"></i> <span id="sec-select-person">ব্যক্তি নির্বাচন করুন (খাতা খুলুন)</span>
+                            <i class="ph-bold ph-users text-sky-600"></i> <span id="sec-select-person">ব্যক্তি নির্বাচন করুন (খাতা খুলুন)</span>
                         </h2>
-                        <input type="text" id="searchPerson" oninput="renderPersonList()" placeholder="নাম বা মোবাইল দিয়ে খুঁজুন..." class="w-full mb-3 px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-indigo-500">
+                        <input type="text" id="searchPerson" oninput="renderPersonList()" placeholder="নাম বা মোবাইল দিয়ে খুঁজুন..." class="w-full mb-3 px-3 py-2 border border-sky-100 rounded-xl text-sm focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 bg-sky-50/30">
                     </div>
                     <div id="personList" class="flex flex-wrap gap-2 max-h-48 overflow-y-auto p-1">
                         <!-- Dynamic Person Buttons -->
@@ -124,9 +178,9 @@
         </div>
 
         <!-- VIEW 2: Active Person Ledger Screen -->
-        <div id="ledgerView" class="hidden bg-white rounded-2xl shadow-sm border border-slate-200 p-3 sm:p-6 mb-6">
+        <div id="ledgerView" class="hidden bg-white rounded-2xl shadow-sm border border-sky-100 p-3 sm:p-6 mb-6">
             <div class="flex items-center justify-between mb-3">
-                <button onclick="goBackToHome()" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-semibold transition-all">
+                <button onclick="goBackToHome()" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-sky-50 hover:bg-sky-100 text-sky-700 rounded-xl text-xs font-semibold transition-all border border-sky-200">
                     <i class="ph-bold ph-arrow-left text-sm"></i> <span id="btn-back">তালিকায় ফিরে যান</span>
                 </button>
                 <button onclick="deleteActivePerson()" class="inline-flex items-center gap-1 px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-xl text-xs font-semibold transition-all border border-rose-200" title="এই খাতাটি মুছে ফেলুন">
@@ -134,10 +188,10 @@
                 </button>
             </div>
 
-            <div class="flex flex-col sm:flex-row justify-between sm:items-center border-b border-slate-100 pb-3 mb-4 gap-2">
+            <div class="flex flex-col sm:flex-row justify-between sm:items-center border-b border-sky-100 pb-3 mb-4 gap-2">
                 <div>
                     <h2 class="text-lg sm:text-xl font-bold text-slate-800 flex items-center gap-2">
-                        <i class="ph-bold ph-user text-indigo-600"></i> <span id="activePersonName">-</span>
+                        <i class="ph-bold ph-user text-sky-600"></i> <span id="activePersonName">-</span>
                     </h2>
                     <p id="activePersonPhone" class="text-xs text-slate-400"></p>
                 </div>
@@ -148,32 +202,32 @@
             </div>
 
             <!-- Transaction Form -->
-            <form id="addTransactionForm" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2.5 mb-4 bg-slate-50 p-3 sm:p-4 rounded-xl border border-slate-200/85">
+            <form id="addTransactionForm" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2.5 mb-4 bg-sky-50/50 p-3 sm:p-4 rounded-xl border border-sky-100">
                 <input type="hidden" id="editingTransId" value="">
                 <div>
                     <label class="block text-xs font-semibold text-slate-600 mb-1" id="lbl-tx-type">লেনদেনের ধরণ</label>
-                    <select id="transType" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-indigo-500 font-medium bg-white">
+                    <select id="transType" class="w-full px-3 py-2 border border-sky-100 rounded-xl text-sm focus:outline-none focus:border-sky-500 font-medium bg-white">
                         <option value="give" id="opt-give">দিলাম (পকেট থেকে গেল)</option>
                         <option value="receive" id="opt-receive">পেলাম (পকেটে আসলো)</option>
                     </select>
                 </div>
                 <div>
                     <label class="block text-xs font-semibold text-slate-600 mb-1" id="lbl-tx-amount">টাকার পরিমাণ (৳)</label>
-                    <input type="number" id="transAmount" required min="1" placeholder="০.০০" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-indigo-500 bg-white">
+                    <input type="number" id="transAmount" required min="1" placeholder="০.০০" class="w-full px-3 py-2 border border-sky-100 rounded-xl text-sm focus:outline-none focus:border-sky-500 bg-white">
                 </div>
                 <div>
                     <label class="block text-xs font-semibold text-slate-600 mb-1" id="lbl-tx-date">তারিখ (ইংরেজি)</label>
-                    <input type="text" id="transDate" required placeholder="DD MMM YYYY" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-indigo-500 font-mono bg-white">
+                    <input type="text" id="transDate" required placeholder="DD MMM YYYY" class="w-full px-3 py-2 border border-sky-100 rounded-xl text-sm focus:outline-none focus:border-sky-500 font-mono bg-white">
                 </div>
                 <div>
                     <label class="block text-xs font-semibold text-slate-600 mb-1" id="lbl-tx-note">বিবরণ / নোট</label>
-                    <input type="text" id="transNote" placeholder="কারণ বা নোট..." class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-indigo-500 bg-white">
+                    <input type="text" id="transNote" placeholder="কারণ বা নোট..." class="w-full px-3 py-2 border border-sky-100 rounded-xl text-sm focus:outline-none focus:border-sky-500 bg-white">
                 </div>
                 <div class="flex items-end gap-1">
-                    <button type="submit" id="formSubmitBtn" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2 px-3 rounded-xl text-sm transition-all shadow-md shadow-emerald-100">
+                    <button type="submit" id="formSubmitBtn" class="w-full bg-sky-600 hover:bg-sky-700 text-white font-semibold py-2 px-3 rounded-xl text-sm transition-all shadow-md shadow-sky-200">
                         যোগ করুন
                     </button>
-                    <button type="button" id="cancelEditBtn" onclick="resetForm()" class="hidden bg-slate-400 hover:bg-slate-500 text-white py-2 px-2 rounded-xl text-sm">
+                    <button type="button" id="cancelEditBtn" onclick="resetForm()" class="hidden bg-slate-400 hover:bg-slate-500 text-white py-2 px-2 rounded-xl text-sm transition-colors">
                         <i class="ph-bold ph-x"></i>
                     </button>
                 </div>
@@ -183,7 +237,7 @@
             <div class="overflow-x-auto w-full">
                 <table class="w-full text-left border-collapse text-xs sm:text-sm">
                     <thead>
-                        <tr class="bg-slate-50 text-slate-400 uppercase tracking-wider border-b border-slate-100">
+                        <tr class="bg-sky-50 text-slate-500 uppercase tracking-wider border-b border-sky-100">
                             <th class="py-2.5 px-2 sm:px-3" id="tbl-date">তারিখ</th>
                             <th class="py-2.5 px-2 sm:px-3" id="tbl-note">বিবরণ</th>
                             <th class="py-2.5 px-2 sm:px-3" id="tbl-type">ধরণ</th>
@@ -191,14 +245,14 @@
                             <th class="py-2.5 px-2 sm:px-3 text-center" id="tbl-action">অ্যাকশন</th>
                         </tr>
                     </thead>
-                    <tbody id="personTransTable" class="text-slate-700 divide-y divide-slate-100">
+                    <tbody id="personTransTable" class="text-slate-700 divide-y divide-sky-50">
                         <!-- Dynamic Rows -->
                     </tbody>
                 </table>
             </div>
             
             <!-- Pagination Controls -->
-            <div id="paginationContainer" class="flex items-center justify-between pt-3 mt-3 border-t border-slate-100 text-xs">
+            <div id="paginationContainer" class="flex items-center justify-between pt-3 mt-3 border-t border-sky-100 text-xs">
                 <span id="pageInfo" class="text-slate-500">Showing page 1 of 1</span>
                 <div class="flex items-center gap-1.5" id="pageButtons">
                     <!-- Dynamic Page Buttons -->
@@ -211,9 +265,9 @@
         </div>
     </div>
 
-    <!-- Scripting with Direct Cloud Persistence & Realtime Snapshot -->
+    <!-- Scripting with Offline Support & Cloud Sync -->
     <script>
-        // ✅ আপনার নতুন Firebase প্রজেক্টের কনফিগারেশন
+        // 🔧 আপনার ফায়ারবেস কনফিগারেশন
         const firebaseConfig = {
             apiKey: "AIzaSyAKJ_eOuRAnRvdJYPVXsVi16DjLxAGchiE",
             authDomain: "cybrfix-smart-ledger.firebaseapp.com",
@@ -230,6 +284,15 @@
         const auth = firebase.auth();
         const db = firebase.firestore();
 
+        // 🔥 অফলাইন পার্সিস্টেন্স চালু করা (পেজ রিফ্রেশে ডেটা হারাবে না)
+        db.enablePersistence({ synchronizeTabs: true }).catch((err) => {
+            if (err.code == 'failed-precondition') {
+                console.log("Multiple tabs open, persistence can only be enabled in one tab at a a time.");
+            } else if (err.code == 'unimplemented') {
+                console.log("The current browser does not support all of the features required to enable persistence");
+            }
+        });
+
         let currentUser = null;
         let ledgerData = { persons: [] };
         let activePersonId = null;
@@ -238,85 +301,34 @@
         let currentLang = localStorage.getItem('cybrfix_smart_khata_lang') || 'bn';
         let unsubscribeSnapshot = null;
         let isSyncing = false;
+        let pendingLoginAction = 'merge';
 
         const translations = {
             bn: {
-                title: "স্মার্ট লেনদেন খাতা",
-                subtitle: "ব্যক্তিভিত্তিক খাতা ও সহজ লেনদেন ট্র্যাকার",
-                badge: "Developed by Cybrfix",
-                loginBtn: "জিমেইল লগইন",
-                syncText: "আপনি অফলাইন মোডে আছেন। ডাটা ক্লাউডে সুরক্ষিত রাখতে জিমেইল দিয়ে লগইন করুন।",
-                totalGet: "পাওনা ( পাবো )",
-                totalGive: "দেনা ( দিতে হবে )",
-                totalBalance: "ব্যালেন্স",
-                addPersonTitle: "নতুন ব্যক্তি যোগ করুন",
-                personNamePh: "ব্যক্তির নাম...",
-                personPhonePh: "মোবাইল নম্বর (অপশনাল)...",
-                addPersonBtn: "ব্যক্তি যুক্ত করুন",
-                selectPersonTitle: "ব্যক্তি নির্বাচন করুন (খাতা খুলুন)",
-                searchPh: "নাম বা মোবাইল দিয়ে খুঁজুন...",
-                currentStatus: "বর্তমান হিসাব",
-                txTypeLbl: "লেনদেনের ধরণ",
-                optGive: "দিলাম (পকেট থেকে গেল)",
-                optReceive: "পেলাম (পকেটে আসলো)",
-                txAmountPh: "০.০০",
-                txNotePh: "কারণ বা নোট...",
-                addTxBtn: "যোগ করুন",
-                updateTxBtn: "আপডেট করুন",
-                tblDate: "তারিখ",
-                tblNote: "বিবরণ",
-                tblType: "ধরণ",
-                tblAmount: "পরিমাণ",
-                tblAction: "অ্যাকশন",
-                noTransMsg: "এই ব্যক্তির সাথে এখনও কোনো লেনদেন রেকর্ড হয়নি।",
-                backBtn: "তালিকায় ফিরে যান",
-                deletePersonBtn: "খাতা ডিলিট করুন",
-                giveText: "দিলাম",
-                receiveText: "পেলাম",
-                defaultGiveNote: "দিলাম",
-                defaultReceiveNote: "পেলাম",
-                statusGet: "পাবো",
-                statusGive: "দেনা",
-                statusEqual: "সমতা"
+                title: "স্মার্ট লেনদেন খাতা", subtitle: "ব্যক্তিভিত্তিক খাতা ও সহজ লেনদেন ট্র্যাকার", badge: "Developed by Cybrfix",
+                loginBtn: "জিমেইল লগইন", syncText: "আপনি অফলাইন মোডে আছেন। ডাটা আপনার ব্রাউজারে সেভ হচ্ছে।",
+                totalGet: "পাওনা ( পাবো )", totalGive: "দেনা ( দিতে হবে )", totalBalance: "ব্যালেন্স",
+                addPersonTitle: "নতুন ব্যক্তি যোগ করুন", personNamePh: "ব্যক্তির নাম...", personPhonePh: "মোবাইল নম্বর (অপশনাল)...", addPersonBtn: "ব্যক্তি যুক্ত করুন",
+                selectPersonTitle: "ব্যক্তি নির্বাচন করুন (খাতা খুলুন)", searchPh: "নাম বা মোবাইল দিয়ে খুঁজুন...",
+                currentStatus: "বর্তমান হিসাব", txTypeLbl: "লেনদেনের ধরণ", optGive: "দিলাম (পকেট থেকে গেল)", optReceive: "পেলাম (পকেটে আসলো)",
+                txAmountPh: "০.০০", txNotePh: "কারণ বা নোট...", addTxBtn: "যোগ করুন", updateTxBtn: "আপডেট করুন",
+                tblDate: "তারিখ", tblNote: "বিবরণ", tblType: "ধরণ", tblAmount: "পরিমাণ", tblAction: "অ্যাকশন",
+                noTransMsg: "এই ব্যক্তির সাথে এখনও কোনো লেনদেন রেকর্ড হয়নি।", backBtn: "তালিকায় ফিরে যান", deletePersonBtn: "খাতা ডিলিট করুন",
+                giveText: "দিলাম", receiveText: "পেলাম", defaultGiveNote: "দিলাম", defaultReceiveNote: "পেলাম",
+                statusGet: "পাবো", statusGive: "দেনা", statusEqual: "সমতা"
             },
             en: {
-                title: "Smart Ledger",
-                subtitle: "Personal Khata & Transaction Tracker",
-                badge: "Developed by Cybrfix",
-                loginBtn: "Google Login",
-                syncText: "You are in offline mode. Login with Google to secure your data in cloud.",
-                totalGet: "Receivable",
-                totalGive: "Payable",
-                totalBalance: "Balance",
-                addPersonTitle: "Add New Person",
-                personNamePh: "Person name...",
-                personPhonePh: "Phone number (Optional)...",
-                addPersonBtn: "Add Person",
-                selectPersonTitle: "Select Person (Open Khata)",
-                searchPh: "Search by name or phone...",
-                currentStatus: "Current Balance",
-                txTypeLbl: "Transaction Type",
-                optGive: "Gave (Out from pocket)",
-                optReceive: "Received (In to pocket)",
-                txAmountPh: "0.00",
-                txNotePh: "Reason or note...",
-                addTxBtn: "Add",
-                updateTxBtn: "Update",
-                tblDate: "Date",
-                tblNote: "Description",
-                tblType: "Type",
-                tblAmount: "Amount",
-                tblAction: "Action",
-                noTransMsg: "No transactions recorded with this person yet.",
-                backBtn: "Back to List",
-                deletePersonBtn: "Delete Khata",
-                giveText: "Gave",
-                receiveText: "Received",
-                defaultGiveNote: "Gave",
-                defaultReceiveNote: "Received",
-                statusGet: "To Get",
-                statusGive: "Payable",
-                statusEqual: "Equal"
+                title: "Smart Ledger", subtitle: "Personal Khata & Transaction Tracker", badge: "Developed by Cybrfix",
+                loginBtn: "Google Login", syncText: "You are in offline mode. Data is saved in your browser.",
+                totalGet: "Receivable", totalGive: "Payable", totalBalance: "Balance",
+                addPersonTitle: "Add New Person", personNamePh: "Person name...", personPhonePh: "Phone number (Optional)...", addPersonBtn: "Add Person",
+                selectPersonTitle: "Select Person (Open Khata)", searchPh: "Search by name or phone...",
+                currentStatus: "Current Balance", txTypeLbl: "Transaction Type", optGive: "Gave (Out from pocket)", optReceive: "Received (In to pocket)",
+                txAmountPh: "0.00", txNotePh: "Reason or note...", addTxBtn: "Add", updateTxBtn: "Update",
+                tblDate: "Date", tblNote: "Description", tblType: "Type", tblAmount: "Amount", tblAction: "Action",
+                noTransMsg: "No transactions recorded with this person yet.", backBtn: "Back to List", deletePersonBtn: "Delete Khata",
+                giveText: "Gave", receiveText: "Received", defaultGiveNote: "Gave", defaultReceiveNote: "Received",
+                statusGet: "To Get", statusGive: "Payable", statusEqual: "Equal"
             }
         };
 
@@ -324,17 +336,15 @@
             currentLang = lang;
             localStorage.setItem('cybrfix_smart_khata_lang', lang);
             
-            document.getElementById('lang-bn').className = lang === 'bn' ? 'px-2.5 py-1 text-xs font-semibold rounded-lg transition-all bg-indigo-600 text-white shadow-sm' : 'px-2.5 py-1 text-xs font-semibold rounded-lg transition-all text-slate-600 hover:text-slate-900';
-            document.getElementById('lang-en').className = lang === 'en' ? 'px-2.5 py-1 text-xs font-semibold rounded-lg transition-all bg-indigo-600 text-white shadow-sm' : 'px-2.5 py-1 text-xs font-semibold rounded-lg transition-all text-slate-600 hover:text-slate-900';
+            document.getElementById('lang-bn').className = lang === 'bn' ? 'px-2.5 py-1 text-xs font-semibold rounded-lg transition-all bg-sky-600 text-white shadow-sm' : 'px-2.5 py-1 text-xs font-semibold rounded-lg transition-all text-slate-600 hover:text-slate-900';
+            document.getElementById('lang-en').className = lang === 'en' ? 'px-2.5 py-1 text-xs font-semibold rounded-lg transition-all bg-sky-600 text-white shadow-sm' : 'px-2.5 py-1 text-xs font-semibold rounded-lg transition-all text-slate-600 hover:text-slate-900';
 
             const t = translations[lang];
             document.getElementById('app-title').textContent = t.title;
             document.getElementById('app-subtitle').textContent = t.subtitle;
             document.getElementById('brand-badge').textContent = t.badge;
             document.getElementById('login-text').textContent = t.loginBtn;
-            if(!currentUser) {
-                document.getElementById('sync-banner-text').textContent = t.syncText;
-            }
+            if(!currentUser) document.getElementById('sync-banner-text').textContent = t.syncText;
             document.getElementById('lbl-total-get').textContent = t.totalGet;
             document.getElementById('lbl-total-give').textContent = t.totalGive;
             document.getElementById('lbl-total-balance').textContent = t.totalBalance;
@@ -360,18 +370,57 @@
             document.getElementById('btn-delete-person').textContent = t.deletePersonBtn;
             
             const submitBtn = document.getElementById('formSubmitBtn');
-            if(editingTransIdEl.value) {
-                submitBtn.textContent = t.updateTxBtn;
-            } else {
-                submitBtn.textContent = t.addTxBtn;
-            }
+            submitBtn.textContent = editingTransIdEl.value ? t.updateTxBtn : t.addTxBtn;
 
             renderPersonList();
             if(activePersonId) renderActiveLedger();
             renderGlobalSummary();
         }
 
-        // 🔥 শুধু Popup ব্যবহার করা হচ্ছে (মোবাইল ও পিসি উভয়ের জন্য)
+        function handleLoginClick() {
+            const offlineDataStr = localStorage.getItem('cybrfix_smart_khata_offline');
+            let hasOfflineData = false;
+            
+            if (offlineDataStr) {
+                const offlineData = JSON.parse(offlineDataStr);
+                if (offlineData.persons && offlineData.persons.length > 0) hasOfflineData = true;
+            }
+
+            if (hasOfflineData) {
+                document.getElementById('syncModal').classList.remove('hidden');
+            } else {
+                loginWithGoogle();
+            }
+        }
+
+        function closeModal() {
+            document.getElementById('syncModal').classList.add('hidden');
+        }
+
+        function resolveConflict(action) {
+            pendingLoginAction = action;
+            closeModal();
+
+            if (action === 'cloud') {
+                localStorage.removeItem('cybrfix_smart_khata_offline');
+            } else if (action === 'export') {
+                // লোকাল ডাটা এক্সপোর্ট করা
+                const offlineDataStr = localStorage.getItem('cybrfix_smart_khata_offline');
+                if (offlineDataStr) {
+                    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(offlineDataStr);
+                    const downloadAnchor = document.createElement('a');
+                    downloadAnchor.setAttribute("href", dataStr);
+                    downloadAnchor.setAttribute("download", "smart_khata_local_backup.json");
+                    document.body.appendChild(downloadAnchor);
+                    downloadAnchor.click();
+                    downloadAnchor.remove();
+                }
+                // এক্সপোর্টের পর লোকাল ডাটা মুছে ফেলা
+                localStorage.removeItem('cybrfix_smart_khata_offline');
+            }
+            loginWithGoogle();
+        }
+
         function loginWithGoogle() {
             const provider = new firebase.auth.GoogleAuthProvider();
             auth.signInWithPopup(provider).catch((error) => {
@@ -383,12 +432,20 @@
             if (unsubscribeSnapshot) { unsubscribeSnapshot(); unsubscribeSnapshot = null; }
             auth.signOut().then(() => {
                 currentUser = null;
-                ledgerData = { persons: [] };
-                activePersonId = null;
+                loadOfflineData();
                 renderPersonList();
                 renderGlobalSummary();
                 goBackToHome();
             });
+        }
+
+        function loadOfflineData() {
+            const offlineData = localStorage.getItem('cybrfix_smart_khata_offline');
+            ledgerData = offlineData ? JSON.parse(offlineData) : { persons: [] };
+            document.getElementById('login-btn').classList.remove('hidden');
+            document.getElementById('user-profile').classList.add('hidden');
+            document.getElementById('sync-banner').className = "bg-amber-50 border border-amber-200 text-amber-800 px-3 py-2 rounded-xl text-xs mb-4 flex items-center justify-between shadow-sm";
+            document.getElementById('sync-banner-text').textContent = translations[currentLang].syncText;
         }
 
         auth.onAuthStateChanged((user) => {
@@ -398,36 +455,55 @@
                 document.getElementById('user-profile').classList.remove('hidden');
                 document.getElementById('user-avatar').src = user.photoURL || 'https://via.placeholder.com/150';
                 document.getElementById('user-name').textContent = user.displayName || user.email;
-                document.getElementById('sync-banner').className = "bg-emerald-50 border border-emerald-200 text-emerald-800 px-3 py-2 rounded-xl text-xs mb-4 flex items-center justify-between shadow-sm";
+                document.getElementById('sync-banner').className = "bg-sky-50 border border-sky-200 text-sky-800 px-3 py-2 rounded-xl text-xs mb-4 flex items-center justify-between shadow-sm";
                 document.getElementById('sync-banner-text').textContent = currentLang === 'bn' ? `স্বাগতম, ${user.displayName || 'ব্যবহারকারী'}! আপনার ডাটা ক্লাউডে সুরক্ষিত আছে।` : `Welcome, ${user.displayName || 'User'}! Data safely synced.`;
                 
                 initCloudSync(user.uid);
             } else {
-                document.getElementById('login-btn').classList.remove('hidden');
-                document.getElementById('user-profile').classList.add('hidden');
-                document.getElementById('sync-banner').className = "bg-amber-50 border border-amber-200 text-amber-800 px-3 py-2 rounded-xl text-xs mb-4 flex items-center justify-between shadow-sm";
-                document.getElementById('sync-banner-text').textContent = translations[currentLang].syncText;
-                
-                ledgerData = { persons: [] };
+                loadOfflineData();
                 renderPersonList();
                 renderGlobalSummary();
                 if(activePersonId) goBackToHome();
             }
         });
 
-        // 🔥 নিরাপদ সিঙ্ক: শুধু পড়বে, কখনো নিজে থেকে লিখবে না
         function initCloudSync(uid) {
             if (unsubscribeSnapshot) { unsubscribeSnapshot(); unsubscribeSnapshot = null; }
-
             const docRef = db.collection("users").doc(uid);
 
             unsubscribeSnapshot = docRef.onSnapshot({ includeMetadataChanges: true }, (doc) => {
                 const source = doc.metadata.fromCache ? "CACHE" : "SERVER";
-                console.log(`[Cloud Sync] from: ${source}, exists: ${doc.exists}`);
+                console.log(`[Cloud Sync] from: ${source}, exists: ${doc.exists}, action: ${pendingLoginAction}`);
                 
                 if (doc.exists && doc.data().ledgerData) {
+                    let cloudData = doc.data().ledgerData;
+                    const offlineDataStr = localStorage.getItem('cybrfix_smart_khata_offline');
+                    
+                    if (offlineDataStr && pendingLoginAction === 'merge') {
+                        const offlineData = JSON.parse(offlineDataStr);
+                        // মার্জ লজিক
+                        offlineData.persons.forEach(offlinePerson => {
+                            const existingPerson = cloudData.persons.find(p => p.id === offlinePerson.id);
+                            if (existingPerson) {
+                                offlinePerson.transactions.forEach(trans => {
+                                    if (!existingPerson.transactions.find(t => t.id === trans.id)) {
+                                        existingPerson.transactions.push(trans);
+                                    }
+                                });
+                            } else {
+                                cloudData.persons.push(offlinePerson);
+                            }
+                        });
+                        docRef.set({ ledgerData: cloudData, updatedAt: firebase.firestore.FieldValue.serverTimestamp() });
+                    } else if (offlineDataStr && pendingLoginAction === 'local') {
+                        cloudData = JSON.parse(offlineDataStr);
+                        docRef.set({ ledgerData: cloudData, updatedAt: firebase.firestore.FieldValue.serverTimestamp() });
+                    }
+                    
+                    if(offlineDataStr) localStorage.removeItem('cybrfix_smart_khata_offline');
+                    
                     isSyncing = true;
-                    ledgerData = doc.data().ledgerData;
+                    ledgerData = cloudData;
                     localStorage.setItem('cybrfix_smart_khata_' + uid, JSON.stringify(ledgerData));
                     renderPersonList();
                     renderGlobalSummary();
@@ -435,24 +511,27 @@
                     isSyncing = false;
                 } else {
                     if (source === "SERVER" && !doc.exists) {
-                        const localSaved = localStorage.getItem('cybrfix_smart_khata_' + uid);
-                        if (localSaved) {
-                            isSyncing = true;
-                            ledgerData = JSON.parse(localSaved);
-                            renderPersonList();
-                            renderGlobalSummary();
-                            if(activePersonId) renderActiveLedger();
-                            isSyncing = false;
+                        const offlineDataStr = localStorage.getItem('cybrfix_smart_khata_offline');
+                        if (offlineDataStr) {
+                            const offlineData = JSON.parse(offlineDataStr);
+                            docRef.set({ ledgerData: offlineData, updatedAt: firebase.firestore.FieldValue.serverTimestamp() });
+                            ledgerData = offlineData;
+                            localStorage.removeItem('cybrfix_smart_khata_offline');
+                        } else {
+                            ledgerData = { persons: [] };
                         }
+                        localStorage.setItem('cybrfix_smart_khata_' + uid, JSON.stringify(ledgerData));
+                        renderPersonList();
+                        renderGlobalSummary();
+                        if(activePersonId) renderActiveLedger();
                     }
                 }
+                pendingLoginAction = 'merge';
             }, (error) => {
                 console.error("Cloud sync error:", error);
-                alert("ডেটা লোডে সমস্যা: " + error.message + "\n\nসম্ভবত Firestore Rules ঠিক নেই অথবা ইন্টারনেট সমস্যা।");
             });
         }
 
-        // সেভ করার সাথে সাথে ফায়ারবেসে পুশ - শুধু ইউজার অ্যাকশনে চলে
         function saveAndRender() {
             if (isSyncing) return;
 
@@ -464,11 +543,11 @@
                     console.log("✅ Data saved to Firebase!");
                 }).catch((err) => {
                     console.error("❌ Error saving: ", err);
-                    alert("সেভ করতে সমস্যা: " + err.message);
                 });
                 localStorage.setItem('cybrfix_smart_khata_' + currentUser.uid, JSON.stringify(ledgerData));
             } else {
                 localStorage.setItem('cybrfix_smart_khata_offline', JSON.stringify(ledgerData));
+                console.log("✅ Data saved to Local Storage (Offline Mode)");
             }
 
             renderPersonList();
@@ -502,14 +581,7 @@
             e.preventDefault();
             const name = document.getElementById('newPersonName').value.trim();
             const phone = document.getElementById('newPersonPhone').value.trim();
-
-            const newPerson = {
-                id: Date.now(),
-                name: name,
-                phone: phone,
-                transactions: []
-            };
-
+            const newPerson = { id: Date.now(), name: name, phone: phone, transactions: [] };
             ledgerData.persons.push(newPerson);
             saveAndRender();
             addPersonForm.reset();
@@ -533,20 +605,9 @@
             if(person) {
                 if(editId) {
                     const trans = person.transactions.find(t => t.id == editId);
-                    if(trans) {
-                        trans.type = type;
-                        trans.amount = amount;
-                        trans.date = date;
-                        trans.note = note;
-                    }
+                    if(trans) { trans.type = type; trans.amount = amount; trans.date = date; trans.note = note; }
                 } else {
-                    person.transactions.unshift({
-                        id: Date.now(),
-                        type,
-                        amount,
-                        date,
-                        note
-                    });
+                    person.transactions.unshift({ id: Date.now(), type, amount, date, note });
                 }
                 saveAndRender();
                 resetForm();
@@ -559,7 +620,7 @@
             document.getElementById('transNote').value = '';
             transDateEl.value = getDefaultDate();
             formSubmitBtn.textContent = translations[currentLang].addTxBtn;
-            formSubmitBtn.className = 'w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2 px-3 rounded-xl text-sm transition-all shadow-md shadow-emerald-100';
+            formSubmitBtn.className = 'w-full bg-sky-600 hover:bg-sky-700 text-white font-semibold py-2 px-3 rounded-xl text-sm transition-all shadow-md shadow-sky-200';
             cancelEditBtn.classList.add('hidden');
         }
 
@@ -575,7 +636,7 @@
                     document.getElementById('transNote').value = trans.note;
 
                     formSubmitBtn.textContent = translations[currentLang].updateTxBtn;
-                    formSubmitBtn.className = 'w-full bg-amber-600 hover:bg-amber-700 text-white font-semibold py-2 px-3 rounded-xl text-sm transition-all shadow-md shadow-amber-100';
+                    formSubmitBtn.className = 'w-full bg-amber-500 hover:bg-amber-600 text-white font-semibold py-2 px-3 rounded-xl text-sm transition-all shadow-md shadow-amber-200';
                     cancelEditBtn.classList.remove('hidden');
                     addTransactionForm.scrollIntoView({ behavior: 'smooth' });
                 }
@@ -588,7 +649,6 @@
             resetForm();
             renderPersonList();
             renderActiveLedger();
-            
             homeView.classList.add('hidden');
             ledgerView.classList.remove('hidden');
             window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -630,13 +690,13 @@
                 const btn = document.createElement('button');
                 btn.type = 'button';
                 btn.onclick = () => selectPerson(p.id);
-                btn.className = `px-3.5 py-2 rounded-xl text-xs font-semibold flex items-center justify-between border transition-all bg-slate-50 hover:bg-indigo-50/50 text-slate-700 border-slate-200`;
+                btn.className = `px-3.5 py-2 rounded-xl text-xs font-semibold flex items-center justify-between border transition-all bg-white hover:bg-sky-50 text-slate-700 border-sky-100`;
                 
                 let statusColor = bal > 0 ? 'text-emerald-600 font-bold' : (bal < 0 ? 'text-rose-600 font-bold' : 'text-slate-400');
                 let statusLabel = bal > 0 ? `(${t.statusGet})` : (bal < 0 ? `(${t.statusGive})` : '');
 
                 btn.innerHTML = `
-                    <span class="flex items-center gap-1.5"><i class="ph-bold ph-user text-indigo-500"></i> ${p.name}</span>
+                    <span class="flex items-center gap-1.5"><i class="ph-bold ph-user text-sky-500"></i> ${p.name}</span>
                     <span class="text-xs ${statusColor}">৳${Math.abs(bal)} ${statusLabel}</span>
                 `;
                 personListEl.appendChild(btn);
@@ -690,7 +750,7 @@
 
                 paginatedTransactions.forEach(tx => {
                     const row = document.createElement('tr');
-                    row.className = 'hover:bg-slate-50/50 transition-colors border-b border-slate-50';
+                    row.className = 'hover:bg-sky-50/50 transition-colors border-b border-sky-50';
 
                     let isGive = (tx.type === 'give');
                     let typeText = isGive ? t.giveText : t.receiveText;
@@ -699,11 +759,8 @@
                         : `<span class="inline-block px-1.5 py-0.5 rounded text-[10px] sm:text-xs font-bold bg-rose-50 text-rose-600 whitespace-nowrap">${typeText}</span>`;
 
                     let displayNote = tx.note;
-                    if(tx.note === 'দিলাম' || tx.note === 'Gave') {
-                        displayNote = t.defaultGiveNote;
-                    } else if(tx.note === 'পেলাম' || tx.note === 'Received') {
-                        displayNote = t.defaultReceiveNote;
-                    }
+                    if(tx.note === 'দিলাম' || tx.note === 'Gave') displayNote = t.defaultGiveNote;
+                    else if(tx.note === 'পেলাম' || tx.note === 'Received') displayNote = t.defaultReceiveNote;
 
                     row.innerHTML = `
                         <td class="py-2 px-2 sm:px-3 text-[11px] sm:text-xs text-slate-500 font-mono whitespace-nowrap">${tx.date}</td>
@@ -711,7 +768,7 @@
                         <td class="py-2 px-2 sm:px-3 whitespace-nowrap">${typeBadge}</td>
                         <td class="py-2 px-2 sm:px-3 font-bold text-slate-800 text-xs sm:text-sm text-right whitespace-nowrap">৳ ${tx.amount.toLocaleString('en-IN')}</td>
                         <td class="py-2 px-2 sm:px-3 text-center space-x-1 whitespace-nowrap">
-                            <button onclick="editTransaction(${tx.id})" class="text-indigo-400 hover:text-indigo-600 transition-colors p-1" title="Edit">
+                            <button onclick="editTransaction(${tx.id})" class="text-sky-400 hover:text-sky-600 transition-colors p-1" title="Edit">
                                 <i class="ph-bold ph-pencil-simple text-sm sm:text-base"></i>
                             </button>
                             <button onclick="deleteTransaction(${tx.id})" class="text-slate-400 hover:text-rose-600 transition-colors p-1" title="Delete">
@@ -739,14 +796,14 @@
             prevBtn.textContent = '«';
             prevBtn.disabled = currentPage === 1;
             prevBtn.onclick = () => { if(currentPage > 1) { currentPage--; renderActiveLedger(); } };
-            prevBtn.className = `px-2 py-0.5 rounded-lg border text-xs font-semibold ${currentPage === 1 ? 'bg-slate-50 text-slate-300 border-slate-100 cursor-not-allowed' : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'}`;
+            prevBtn.className = `px-2 py-0.5 rounded-lg border text-xs font-semibold ${currentPage === 1 ? 'bg-slate-50 text-slate-300 border-slate-100 cursor-not-allowed' : 'bg-white text-slate-700 border-sky-200 hover:bg-sky-50'}`;
             pageButtons.appendChild(prevBtn);
 
             for(let i = 1; i <= totalPages; i++) {
                 const pageBtn = document.createElement('button');
                 pageBtn.textContent = i;
                 pageBtn.onclick = () => { currentPage = i; renderActiveLedger(); };
-                pageBtn.className = `px-2.5 py-0.5 rounded-lg border text-xs font-semibold ${currentPage === i ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm' : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'}`;
+                pageBtn.className = `px-2.5 py-0.5 rounded-lg border text-xs font-semibold ${currentPage === i ? 'bg-sky-600 text-white border-sky-600 shadow-sm' : 'bg-white text-slate-700 border-sky-200 hover:bg-sky-50'}`;
                 pageButtons.appendChild(pageBtn);
             }
 
@@ -754,7 +811,7 @@
             nextBtn.textContent = '»';
             nextBtn.disabled = currentPage === totalPages;
             nextBtn.onclick = () => { if(currentPage < totalPages) { currentPage++; renderActiveLedger(); } };
-            nextBtn.className = `px-2 py-0.5 rounded-lg border text-xs font-semibold ${currentPage === totalPages ? 'bg-slate-50 text-slate-300 border-slate-100 cursor-not-allowed' : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'}`;
+            nextBtn.className = `px-2 py-0.5 rounded-lg border text-xs font-semibold ${currentPage === totalPages ? 'bg-slate-50 text-slate-300 border-slate-100 cursor-not-allowed' : 'bg-white text-slate-700 border-sky-200 hover:bg-sky-50'}`;
             pageButtons.appendChild(nextBtn);
         }
 
@@ -815,6 +872,8 @@
             }
         }
 
+        // চেক করা: অ্যাপ চালু হলে আগে অফলাইন ডাটা লোড হবে
+        loadOfflineData();
         switchLanguage(currentLang);
     </script>
 </body>
