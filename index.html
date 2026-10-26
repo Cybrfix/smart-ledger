@@ -235,7 +235,7 @@
         const rowsPerPage = 10;
         let currentLang = localStorage.getItem('cybrfix_smart_khata_lang') || 'bn';
         let unsubscribeSnapshot = null;
-        let initialCloudDataLoaded = false; // 🔥 নতুন: প্রথম সার্ভার ডেটা এসেছে কি না
+        let serverDataReceived = false; // 🔥 সার্ভার থেকে ডেটা এসেছে কি না ট্র্যাক করে
 
         const translations = {
             bn: {
@@ -369,7 +369,7 @@
             renderGlobalSummary();
         }
 
-        // 🔥 FIXED: মোবাইলের জন্য redirect, পিসির জন্য popup
+        // 🔥 মোবাইলে redirect, পিসিতে popup
         function loginWithGoogle() {
             const provider = new firebase.auth.GoogleAuthProvider();
             const isMobile = /Android|iPhone|iPad|iPod|Opera Mini|IEMobile|WPDesktop/i.test(navigator.userAgent);
@@ -386,13 +386,12 @@
         }
 
         function logoutUser() {
-            if (unsubscribeSnapshot) unsubscribeSnapshot();
-            initialCloudDataLoaded = false;
+            if (unsubscribeSnapshot) { unsubscribeSnapshot(); unsubscribeSnapshot = null; }
+            serverDataReceived = false;
             auth.signOut().then(() => {
                 currentUser = null;
                 ledgerData = { persons: [] };
                 activePersonId = null;
-                localStorage.removeItem('cybrfix_smart_khata');
                 renderPersonList();
                 renderGlobalSummary();
                 goBackToHome();
@@ -410,7 +409,7 @@
                 document.getElementById('sync-banner').className = "bg-emerald-50 border border-emerald-200 text-emerald-800 px-3 py-2 rounded-xl text-xs mb-4 flex items-center justify-between shadow-sm";
                 document.getElementById('sync-banner-text').textContent = currentLang === 'bn' ? `স্বাগতম, ${user.displayName || 'ব্যবহারকারী'}! আপনার ডাটা ক্লাউডে সুরক্ষিত আছে।` : `Welcome, ${user.displayName || 'User'}! Data safely synced.`;
                 
-                initialCloudDataLoaded = false;
+                serverDataReceived = false;
                 initCloudSync(user.uid);
             } else {
                 document.getElementById('login-btn').classList.remove('hidden');
@@ -425,31 +424,31 @@
             }
         });
 
-        // 🔥 FIXED: initCloudSync - মোবাইলে ডেটা ওভাররাইট হওয়া বন্ধ
+        // 🔥 FIXED: Firestore রিয়েলটাইম সিঙ্ক - মোবাইল/পিসি উভয়ের জন্য নিরাপদ
         function initCloudSync(uid) {
-            if (unsubscribeSnapshot) unsubscribeSnapshot();
+            if (unsubscribeSnapshot) { unsubscribeSnapshot(); unsubscribeSnapshot = null; }
 
             const docRef = db.collection("users").doc(uid);
 
             unsubscribeSnapshot = docRef.onSnapshot({ includeMetadataChanges: true }, (doc) => {
                 const source = doc.metadata.fromCache ? "CACHE" : "SERVER";
-                console.log(`[Cloud Sync] Snapshot from: ${source}, exists: ${doc.exists}`);
+                console.log(`[Cloud Sync] from: ${source}, exists: ${doc.exists}`);
                 
                 if (doc.exists && doc.data().ledgerData) {
-                    // ✅ ক্লাউডে ডেটা আছে - সবসময় সেটাই ব্যবহার করুন
+                    // ✅ ক্লাউডে ডেটা আছে - সরাসরি ব্যবহার করুন
                     ledgerData = doc.data().ledgerData;
-                    initialCloudDataLoaded = true;
+                    serverDataReceived = true;
                 } else if (source === "SERVER") {
-                    // ✅ সার্ভার নিশ্চিত করেছে ডেটা নেই - তবেই লোকাল ডেটা ব্যবহার করুন
-                    if (!initialCloudDataLoaded) {
+                    // ✅ সার্ভার নিশ্চিত করেছে ডেটা নেই - তবেই লোকাল ব্যাকআপ ব্যবহার করুন
+                    if (!serverDataReceived) {
                         const localSaved = localStorage.getItem('cybrfix_smart_khata_' + uid);
                         ledgerData = localSaved ? JSON.parse(localSaved) : { persons: [] };
-                        // ⚠️ এখানে docRef.set() করা হচ্ছে না - saveAndRender() পরে করবে
+                        // ⚠️ এখানে docRef.set() করা হচ্ছে না
                     }
-                    initialCloudDataLoaded = true;
+                    serverDataReceived = true;
                 } else {
                     // ক্যাশ থেকে খালি এসেছে - সার্ভার ডেটার জন্য অপেক্ষা করুন
-                    console.log("[Cloud Sync] Empty cache, waiting for server...");
+                    console.log("[Cloud Sync] Waiting for server data...");
                     return;
                 }
                 
