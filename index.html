@@ -213,13 +213,15 @@
 
     <!-- Scripting with Direct Cloud Persistence & Realtime Snapshot -->
     <script>
+        // ✅ আপনার নতুন Firebase প্রজেক্টের কনফিগারেশন
         const firebaseConfig = {
-            apiKey: "AIzaSyBe7KtGBjhilfCGdjGt0FAmu4dPyctYAsY",
-            authDomain: "studied-tune-xhl8x.firebaseapp.com",
-            projectId: "studied-tune-xhl8x",
-            storageBucket: "studied-tune-xhl8x.firebasestorage.app",
-            messagingSenderId: "948154122397",
-            appId: "1:948154122397:web:72f8e9d620dd8e823b1474"
+            apiKey: "AIzaSyAKJ_eOuRAnRvdJYPVXsVi16DjLxAGchiE",
+            authDomain: "cybrfix-smart-ledger.firebaseapp.com",
+            projectId: "cybrfix-smart-ledger",
+            storageBucket: "cybrfix-smart-ledger.firebasestorage.app",
+            messagingSenderId: "319539538426",
+            appId: "1:319539538426:web:56f6a08e8c6c26beb69c43",
+            measurementId: "G-KC742Z85KL"
         };
 
         if (!firebase.apps.length) {
@@ -235,7 +237,7 @@
         const rowsPerPage = 10;
         let currentLang = localStorage.getItem('cybrfix_smart_khata_lang') || 'bn';
         let unsubscribeSnapshot = null;
-        let serverDataReceived = false; // 🔥 সার্ভার থেকে ডেটা এসেছে কি না ট্র্যাক করে
+        let isSyncing = false;
 
         const translations = {
             bn: {
@@ -387,7 +389,6 @@
 
         function logoutUser() {
             if (unsubscribeSnapshot) { unsubscribeSnapshot(); unsubscribeSnapshot = null; }
-            serverDataReceived = false;
             auth.signOut().then(() => {
                 currentUser = null;
                 ledgerData = { persons: [] };
@@ -398,7 +399,6 @@
             });
         }
 
-        // ফায়ারবেস অথ স্টেট চেঞ্জ
         auth.onAuthStateChanged((user) => {
             currentUser = user;
             if (user) {
@@ -409,7 +409,6 @@
                 document.getElementById('sync-banner').className = "bg-emerald-50 border border-emerald-200 text-emerald-800 px-3 py-2 rounded-xl text-xs mb-4 flex items-center justify-between shadow-sm";
                 document.getElementById('sync-banner-text').textContent = currentLang === 'bn' ? `স্বাগতম, ${user.displayName || 'ব্যবহারকারী'}! আপনার ডাটা ক্লাউডে সুরক্ষিত আছে।` : `Welcome, ${user.displayName || 'User'}! Data safely synced.`;
                 
-                serverDataReceived = false;
                 initCloudSync(user.uid);
             } else {
                 document.getElementById('login-btn').classList.remove('hidden');
@@ -424,7 +423,7 @@
             }
         });
 
-        // 🔥 FIXED: Firestore রিয়েলটাইম সিঙ্ক - মোবাইল/পিসি উভয়ের জন্য নিরাপদ
+        // 🔥 নিরাপদ সিঙ্ক: শুধু পড়বে, কখনো নিজে থেকে লিখবে না
         function initCloudSync(uid) {
             if (unsubscribeSnapshot) { unsubscribeSnapshot(); unsubscribeSnapshot = null; }
 
@@ -435,42 +434,45 @@
                 console.log(`[Cloud Sync] from: ${source}, exists: ${doc.exists}`);
                 
                 if (doc.exists && doc.data().ledgerData) {
-                    // ✅ ক্লাউডে ডেটা আছে - সরাসরি ব্যবহার করুন
+                    isSyncing = true;
                     ledgerData = doc.data().ledgerData;
-                    serverDataReceived = true;
-                } else if (source === "SERVER") {
-                    // ✅ সার্ভার নিশ্চিত করেছে ডেটা নেই - তবেই লোকাল ব্যাকআপ ব্যবহার করুন
-                    if (!serverDataReceived) {
-                        const localSaved = localStorage.getItem('cybrfix_smart_khata_' + uid);
-                        ledgerData = localSaved ? JSON.parse(localSaved) : { persons: [] };
-                        // ⚠️ এখানে docRef.set() করা হচ্ছে না
-                    }
-                    serverDataReceived = true;
+                    localStorage.setItem('cybrfix_smart_khata_' + uid, JSON.stringify(ledgerData));
+                    renderPersonList();
+                    renderGlobalSummary();
+                    if(activePersonId) renderActiveLedger();
+                    isSyncing = false;
                 } else {
-                    // ক্যাশ থেকে খালি এসেছে - সার্ভার ডেটার জন্য অপেক্ষা করুন
-                    console.log("[Cloud Sync] Waiting for server data...");
-                    return;
+                    if (source === "SERVER" && !doc.exists) {
+                        const localSaved = localStorage.getItem('cybrfix_smart_khata_' + uid);
+                        if (localSaved) {
+                            isSyncing = true;
+                            ledgerData = JSON.parse(localSaved);
+                            renderPersonList();
+                            renderGlobalSummary();
+                            if(activePersonId) renderActiveLedger();
+                            isSyncing = false;
+                        }
+                    }
                 }
-                
-                localStorage.setItem('cybrfix_smart_khata_' + uid, JSON.stringify(ledgerData));
-                renderPersonList();
-                renderGlobalSummary();
-                if(activePersonId) renderActiveLedger();
             }, (error) => {
                 console.error("Cloud sync error:", error);
+                alert("ডেটা লোডে সমস্যা: " + error.message + "\n\nসম্ভবত Firestore Rules ঠিক নেই অথবা ইন্টারনেট সমস্যা।");
             });
         }
 
-        // সেভ করার সাথে সাথে ফায়ারবেসে পার্মানেন্টলি পুশ করার ফাংশন
+        // সেভ করার সাথে সাথে ফায়ারবেসে পুশ - শুধু ইউজার অ্যাকশনে চলে
         function saveAndRender() {
+            if (isSyncing) return;
+
             if (currentUser) {
                 db.collection("users").doc(currentUser.uid).set({
                     ledgerData: ledgerData,
                     updatedAt: firebase.firestore.FieldValue.serverTimestamp()
                 }).then(() => {
-                    console.log("Data successfully saved to Firebase!");
+                    console.log("✅ Data saved to Firebase!");
                 }).catch((err) => {
-                    console.error("Error saving to cloud: ", err);
+                    console.error("❌ Error saving: ", err);
+                    alert("সেভ করতে সমস্যা: " + err.message);
                 });
                 localStorage.setItem('cybrfix_smart_khata_' + currentUser.uid, JSON.stringify(ledgerData));
             } else {
