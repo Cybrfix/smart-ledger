@@ -59,7 +59,7 @@
                     <button onclick="exportData()" class="px-2 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-600 rounded-xl text-xs font-semibold flex items-center gap-1 transition-colors border border-emerald-200" title="ব্যাকআপ">
                         <i class="ph-bold ph-download-simple"></i> <span class="hidden sm:inline">Export</span>
                     </button>
-                    <label class="px-2 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 rounded-xl text-xs font-semibold flex items-center gap-1 transition-colors border border-emerald-200 cursor-pointer" title="ইম্পোর্ট">
+                    <label class="px-2 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 rounded-xl text-xs font-semibold flex items-center gap-1 transition-colors border border-indigo-200 cursor-pointer" title="ইম্পোর্ট">
                         <i class="ph-bold ph-upload-simple"></i> <span class="hidden sm:inline">Import</span>
                         <input type="file" id="importFile" accept=".json" onchange="importData(event)" class="hidden">
                     </label>
@@ -75,7 +75,7 @@
             </div>
         </div>
 
-        <!-- Summary Cards (3 Columns Side by Side on Mobile) -->
+        <!-- Summary Cards -->
         <div class="grid grid-cols-3 gap-2 sm:gap-4 mb-4">
             <div class="bg-white p-3 sm:p-5 rounded-2xl shadow-sm border border-slate-200 text-center sm:text-left">
                 <p class="text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-wider" id="lbl-total-get">পাওনা ( পাবো )</p>
@@ -129,7 +129,6 @@
                 <button onclick="goBackToHome()" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-semibold transition-all">
                     <i class="ph-bold ph-arrow-left text-sm"></i> <span id="btn-back">তালিকায় ফিরে যান</span>
                 </button>
-                <!-- পুরো খাতা ডিলিট করার বাটন -->
                 <button onclick="deleteActivePerson()" class="inline-flex items-center gap-1 px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-xl text-xs font-semibold transition-all border border-rose-200" title="এই খাতাটি মুছে ফেলুন">
                     <i class="ph-bold ph-trash text-sm"></i> <span id="btn-delete-person">খাতা ডিলিট করুন</span>
                 </button>
@@ -212,7 +211,7 @@
         </div>
     </div>
 
-    <!-- Scripting with Robust Real-Time Cloud Sync -->
+    <!-- Scripting with Direct Cloud Persistence & Realtime Snapshot -->
     <script>
         const firebaseConfig = {
             apiKey: "AIzaSyBe7KtGBjhilfCGdjGt0FAmu4dPyctYAsY",
@@ -235,6 +234,7 @@
         let currentPage = 1;
         const rowsPerPage = 10;
         let currentLang = localStorage.getItem('cybrfix_smart_khata_lang') || 'bn';
+        let unsubscribeSnapshot = null;
 
         const translations = {
             bn: {
@@ -368,29 +368,6 @@
             renderGlobalSummary();
         }
 
-        // Firebase Auth State & Cloud Sync Listener
-        auth.onAuthStateChanged((user) => {
-            currentUser = user;
-            if (user) {
-                document.getElementById('login-btn').classList.add('hidden');
-                document.getElementById('user-profile').classList.remove('hidden');
-                document.getElementById('user-avatar').src = user.photoURL || 'https://via.placeholder.com/150';
-                document.getElementById('user-name').textContent = user.displayName || user.email;
-                document.getElementById('sync-banner').className = "bg-emerald-50 border border-emerald-200 text-emerald-800 px-3 py-2 rounded-xl text-xs mb-4 flex items-center justify-between shadow-sm";
-                document.getElementById('sync-banner-text').textContent = currentLang === 'bn' ? `স্বাগতম, ${user.displayName || 'ব্যবহারকারী'}! আপনার ডাটা ক্লাউডে সুরক্ষিত আছে।` : `Welcome, ${user.displayName || 'User'}! Your data is securely synced with cloud.`;
-                
-                // ক্লাউড থেকে রিয়েল-টাইম ডাটা ফেচ করা
-                fetchDataFromCloudAndSync();
-            } else {
-                document.getElementById('login-btn').classList.remove('hidden');
-                document.getElementById('user-profile').classList.add('hidden');
-                document.getElementById('sync-banner').className = "bg-amber-50 border border-amber-200 text-amber-800 px-3 py-2 rounded-xl text-xs mb-4 flex items-center justify-between shadow-sm";
-                document.getElementById('sync-banner-text').textContent = translations[currentLang].syncText;
-                
-                loadDataFromLocal();
-            }
-        });
-
         function loginWithGoogle() {
             const provider = new firebase.auth.GoogleAuthProvider();
             auth.signInWithPopup(provider).catch((error) => {
@@ -399,66 +376,91 @@
         }
 
         function logoutUser() {
+            if (unsubscribeSnapshot) unsubscribeSnapshot();
             auth.signOut().then(() => {
+                currentUser = null;
                 ledgerData = { persons: [] };
                 activePersonId = null;
-                saveAndRender();
+                localStorage.removeItem('cybrfix_smart_khata');
+                renderPersonList();
+                renderGlobalSummary();
+                goBackToHome();
             });
         }
 
-        // সেন্ট্রালাইজড সেভ ফাংশন যা লোকাল ও ক্লাউড দুই জায়গাতেই আপডেট রাখবে
-        function saveAndRender() {
-            if (currentUser) {
-                // ফায়ারবেস ক্লাউডে সেভ করা
-                db.collection("users").doc(currentUser.uid).set({
-                    ledgerData: ledgerData,
-                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-                }).catch((err) => console.error("Cloud save error:", err));
+        // ফায়ারবেস অথ স্টেট চেঞ্জ
+        auth.onAuthStateChanged((user) => {
+            currentUser = user;
+            if (user) {
+                document.getElementById('login-btn').classList.add('hidden');
+                document.getElementById('user-profile').classList.remove('hidden');
+                document.getElementById('user-avatar').src = user.photoURL || 'https://via.placeholder.com/150';
+                document.getElementById('user-name').textContent = user.displayName || user.email;
+                document.getElementById('sync-banner').className = "bg-emerald-50 border border-emerald-200 text-emerald-800 px-3 py-2 rounded-xl text-xs mb-4 flex items-center justify-between shadow-sm";
+                document.getElementById('sync-banner-text').textContent = currentLang === 'bn' ? `স্বাগতম, ${user.displayName || 'ব্যবহারকারী'}! আপনার ডাটা ক্লাউডে সুরক্ষিত আছে।` : `Welcome, ${user.displayName || 'User'}! Data safely synced.`;
+                
+                // ক্লাউড থেকে রিয়েলটাইম লাইভ সিঙ্ক শুরু করা
+                initCloudSync(user.uid);
+            } else {
+                document.getElementById('login-btn').classList.remove('hidden');
+                document.getElementById('user-profile').classList.add('hidden');
+                document.getElementById('sync-banner').className = "bg-amber-50 border border-amber-200 text-amber-800 px-3 py-2 rounded-xl text-xs mb-4 flex items-center justify-between shadow-sm";
+                document.getElementById('sync-banner-text').textContent = translations[currentLang].syncText;
+                
+                ledgerData = { persons: [] };
+                renderPersonList();
+                renderGlobalSummary();
+                if(activePersonId) goBackToHome();
             }
-            
-            // লোকাল স্টোরেজেও ব্যাকআপ হিসেবে সেভ রাখা
-            localStorage.setItem('cybrfix_smart_khata', JSON.stringify(ledgerData));
+        });
 
-            renderPersonList();
-            if(activePersonId) renderActiveLedger();
-            renderGlobalSummary();
-        }
+        // ফায়ারস্টোর থেকে রিয়েলটাইম লাইভ ডাটা কানেকশন
+        function initCloudSync(uid) {
+            if (unsubscribeSnapshot) unsubscribeSnapshot();
 
-        function loadDataFromLocal() {
-            const saved = localStorage.getItem('cybrfix_smart_khata');
-            ledgerData = saved ? JSON.parse(saved) : { persons: [] };
-            renderPersonList();
-            renderGlobalSummary();
-            if(activePersonId) renderActiveLedger();
-        }
+            const docRef = db.collection("users").doc(uid);
 
-        // ক্লাউড থেকে সঠিক ডাটা নিয়ে আসার এবং নতুন ইউজার হলে লোকাল ডাটা ক্লাউডে সিঙ্ক করার ফাংশন
-        function fetchDataFromCloudAndSync() {
-            db.collection("users").doc(currentUser.uid).get().then((doc) => {
+            unsubscribeSnapshot = docRef.onSnapshot((doc) => {
                 if (doc.exists && doc.data().ledgerData) {
-                    // ক্লাউডে ডাটা থাকলে সেটাই মূল ডাটা হিসেবে সেট হবে
+                    // ক্লাউডে ডাটা থাকলে সরাসরি সেটাই নিয়ে নেব (রিফ্রেশ দিলেও আর মুছবে না)
                     ledgerData = doc.data().ledgerData;
                 } else {
-                    // ক্লাউডে ডাটা না থাকলে কিন্তু লোকাল স্টোরেজে ডাটা থাকলে তা ক্লাউডে পাঠিয়ে সিঙ্ক করে দিবে
-                    const localSaved = localStorage.getItem('cybrfix_smart_khata');
-                    if (localSaved) {
-                        ledgerData = JSON.parse(localSaved);
-                    } else {
-                        ledgerData = { persons: [] };
-                    }
-                    // প্রথমবার ক্লাউডে পুশ করা
-                    db.collection("users").doc(currentUser.uid).set({
+                    // ক্লাউডে ডাটা না থাকলে লোকালস্টোরেজ বা নতুন ফাঁকা ডাটা দিয়ে ক্লাউড ইনিশিয়ালাইজ করব
+                    const localSaved = localStorage.getItem('cybrfix_smart_khata_' + uid);
+                    ledgerData = localSaved ? JSON.parse(localSaved) : { persons: [] };
+                    docRef.set({
                         ledgerData: ledgerData,
                         updatedAt: firebase.firestore.FieldValue.serverTimestamp()
                     });
                 }
+                localStorage.setItem('cybrfix_smart_khata_' + uid, JSON.stringify(ledgerData));
                 renderPersonList();
                 renderGlobalSummary();
                 if(activePersonId) renderActiveLedger();
-            }).catch((err) => {
-                console.error("Cloud load error:", err);
-                loadDataFromLocal();
+            }, (error) => {
+                console.error("Cloud sync error:", error);
             });
+        }
+
+        // সেভ করার সাথে সাথে ফায়ারবেসে পার্মানেন্টলি পুশ করার ফাংশন
+        function saveAndRender() {
+            if (currentUser) {
+                db.collection("users").doc(currentUser.uid).set({
+                    ledgerData: ledgerData,
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                }).then(() => {
+                    console.log("Data successfully saved to Firebase!");
+                }).catch((err) => {
+                    console.error("Error saving to cloud: ", err);
+                });
+                localStorage.setItem('cybrfix_smart_khata_' + currentUser.uid, JSON.stringify(ledgerData));
+            } else {
+                localStorage.setItem('cybrfix_smart_khata_offline', JSON.stringify(ledgerData));
+            }
+
+            renderPersonList();
+            if(activePersonId) renderActiveLedger();
+            renderGlobalSummary();
         }
 
         const addPersonForm = document.getElementById('addPersonForm');
@@ -628,7 +630,6 @@
             });
         }
 
-        // সঠিক লজিক অপরিবর্তিত রাখা হয়েছে: give (দিলাম) মানে পাওনা বাড়ল (+) এবং receive (পেলাম) মানে হিসাব কমল (-)
         function getPersonBalance(person) {
             let balance = 0; 
             person.transactions.forEach(t => {
