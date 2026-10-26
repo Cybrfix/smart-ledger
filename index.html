@@ -59,7 +59,7 @@
                     <button onclick="exportData()" class="px-2 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-600 rounded-xl text-xs font-semibold flex items-center gap-1 transition-colors border border-emerald-200" title="ব্যাকআপ">
                         <i class="ph-bold ph-download-simple"></i> <span class="hidden sm:inline">Export</span>
                     </button>
-                    <label class="px-2 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 rounded-xl text-xs font-semibold flex items-center gap-1 transition-colors border border-indigo-200 cursor-pointer" title="ইম্পোর্ট">
+                    <label class="px-2 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 rounded-xl text-xs font-semibold flex items-center gap-1 transition-colors border border-emerald-200 cursor-pointer" title="ইম্পোর্ট">
                         <i class="ph-bold ph-upload-simple"></i> <span class="hidden sm:inline">Import</span>
                         <input type="file" id="importFile" accept=".json" onchange="importData(event)" class="hidden">
                     </label>
@@ -212,7 +212,7 @@
         </div>
     </div>
 
-    <!-- Scripting with Real Firebase Credentials & Multilingual Support -->
+    <!-- Scripting with Robust Real-Time Cloud Sync -->
     <script>
         const firebaseConfig = {
             apiKey: "AIzaSyBe7KtGBjhilfCGdjGt0FAmu4dPyctYAsY",
@@ -368,6 +368,7 @@
             renderGlobalSummary();
         }
 
+        // Firebase Auth State & Cloud Sync Listener
         auth.onAuthStateChanged((user) => {
             currentUser = user;
             if (user) {
@@ -378,7 +379,8 @@
                 document.getElementById('sync-banner').className = "bg-emerald-50 border border-emerald-200 text-emerald-800 px-3 py-2 rounded-xl text-xs mb-4 flex items-center justify-between shadow-sm";
                 document.getElementById('sync-banner-text').textContent = currentLang === 'bn' ? `স্বাগতম, ${user.displayName || 'ব্যবহারকারী'}! আপনার ডাটা ক্লাউডে সুরক্ষিত আছে।` : `Welcome, ${user.displayName || 'User'}! Your data is securely synced with cloud.`;
                 
-                loadDataFromCloud();
+                // ক্লাউড থেকে রিয়েল-টাইম ডাটা ফেচ করা
+                fetchDataFromCloudAndSync();
             } else {
                 document.getElementById('login-btn').classList.remove('hidden');
                 document.getElementById('user-profile').classList.add('hidden');
@@ -404,15 +406,19 @@
             });
         }
 
+        // সেন্ট্রালাইজড সেভ ফাংশন যা লোকাল ও ক্লাউড দুই জায়গাতেই আপডেট রাখবে
         function saveAndRender() {
             if (currentUser) {
+                // ফায়ারবেস ক্লাউডে সেভ করা
                 db.collection("users").doc(currentUser.uid).set({
                     ledgerData: ledgerData,
                     updatedAt: firebase.firestore.FieldValue.serverTimestamp()
                 }).catch((err) => console.error("Cloud save error:", err));
-            } else {
-                localStorage.setItem('cybrfix_smart_khata', JSON.stringify(ledgerData));
             }
+            
+            // লোকাল স্টোরেজেও ব্যাকআপ হিসেবে সেভ রাখা
+            localStorage.setItem('cybrfix_smart_khata', JSON.stringify(ledgerData));
+
             renderPersonList();
             if(activePersonId) renderActiveLedger();
             renderGlobalSummary();
@@ -426,12 +432,25 @@
             if(activePersonId) renderActiveLedger();
         }
 
-        function loadDataFromCloud() {
+        // ক্লাউড থেকে সঠিক ডাটা নিয়ে আসার এবং নতুন ইউজার হলে লোকাল ডাটা ক্লাউডে সিঙ্ক করার ফাংশন
+        function fetchDataFromCloudAndSync() {
             db.collection("users").doc(currentUser.uid).get().then((doc) => {
                 if (doc.exists && doc.data().ledgerData) {
+                    // ক্লাউডে ডাটা থাকলে সেটাই মূল ডাটা হিসেবে সেট হবে
                     ledgerData = doc.data().ledgerData;
                 } else {
-                    ledgerData = { persons: [] };
+                    // ক্লাউডে ডাটা না থাকলে কিন্তু লোকাল স্টোরেজে ডাটা থাকলে তা ক্লাউডে পাঠিয়ে সিঙ্ক করে দিবে
+                    const localSaved = localStorage.getItem('cybrfix_smart_khata');
+                    if (localSaved) {
+                        ledgerData = JSON.parse(localSaved);
+                    } else {
+                        ledgerData = { persons: [] };
+                    }
+                    // প্রথমবার ক্লাউডে পুশ করা
+                    db.collection("users").doc(currentUser.uid).set({
+                        ledgerData: ledgerData,
+                        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                    });
                 }
                 renderPersonList();
                 renderGlobalSummary();
