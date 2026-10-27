@@ -4,6 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Smart Ledger & Personal Khata | By Cybrfix</title>
+    
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#0284c7">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="apple-mobile-web-app-title" content="Smart Ledger">
+
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Phosphor Icons -->
@@ -14,25 +21,88 @@
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 
+    <!-- 🔥 Tailwind Dark Mode কনফিগারেশন -->
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        darkBg: '#0b1120',
+                        darkCard: '#151e32',
+                        darkBorder: '#1e293b',
+                    }
+                }
+            }
+        }
+    </script>
+
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        .modal-overlay {
-            background-color: rgba(15, 23, 42, 0.6); /* slate-900 with opacity */
-            backdrop-filter: blur(4px);
+        .modal-overlay { background-color: rgba(15, 23, 42, 0.75); backdrop-filter: blur(6px); }
+        
+        .dark body {
+            background-color: #0b1120;
+            background-image: radial-gradient(at 0% 0%, hsla(253,16%,7%,1) 0, transparent 50%), radial-gradient(at 50% 0%, hsla(225,39%,30%,0.1) 0, transparent 50%), radial-gradient(at 100% 0%, hsla(339,49%,30%,0.1) 0, transparent 50%);
         }
-        /* Custom scrollbar for sky blue theme */
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: #f0f9ff; }
-        ::-webkit-scrollbar-thumb { background: #bae6fd; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #7dd3fc; }
-    </style>
-</head>
-<body class="bg-sky-50 min-h-screen py-4 px-2 sm:px-6 lg:px-8 text-slate-800">
+        
+        .dark .glass-card {
+            background: #151e32;
+            border: 1px solid #1e293b;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
+        }
 
-    <!-- 🔥 সিঙ্ক কনফ্লিক্ট মডাল (লগইনের আগে দেখাবে) -->
+        .dark .neon-glow {
+            box-shadow: 0 0 15px rgba(14, 165, 233, 0.15);
+        }
+        
+        .dark .neon-glow-hover:hover {
+            box-shadow: 0 0 20px rgba(14, 165, 233, 0.3);
+            border-color: #0ea5e9;
+        }
+
+        .dark input, .dark select {
+            background-color: #0f172a !important;
+            color: #e2e8f0 !important;
+            border-color: #1e293b !important;
+        }
+
+        .dark input:focus, .dark select:focus {
+            border-color: #0ea5e9 !important;
+            box-shadow: 0 0 0 2px rgba(14, 165, 233, 0.2);
+        }
+
+        .dark table th { background-color: #0f172a !important; color: #94a3b8; }
+        .dark table td { color: #e2e8f0; border-color: #1e293b; }
+        
+        .dark ::-webkit-scrollbar { width: 6px; }
+        .dark ::-webkit-scrollbar-track { background: #0b1120; }
+        .dark ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 4px; }
+        .dark ::-webkit-scrollbar-thumb:hover { background: #0ea5e9; }
+    </style>
+
+    <script>
+        const iconSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><rect width="512" height="512" rx="100" fill="#0284c7"/><text x="50%" y="55%" font-size="300" text-anchor="middle" fill="#ffffff" dominant-baseline="middle" font-family="sans-serif">৳</text></svg>`;
+        const iconUrl = `data:image/svg+xml;base64,${btoa(iconSvg)}`;
+        const manifest = {
+            name: "Smart Ledger", short_name: "Ledger", start_url: "./", display: "standalone",
+            background_color: "#0b1120", theme_color: "#0284c7",
+            icons: [{ src: iconUrl, sizes: "192x192", type: "image/svg+xml" }, { src: iconUrl, sizes: "512x512", type: "image/svg+xml" }]
+        };
+        const manifestBlob = new Blob([JSON.stringify(manifest)], {type: 'application/json'});
+        const manifestUrl = URL.createObjectURL(manifestBlob);
+        const link = document.createElement('link');
+        link.rel = 'manifest';
+        link.href = manifestUrl;
+        document.head.appendChild(link);
+    </script>
+</head>
+<body class="bg-sky-50 dark:bg-darkBg min-h-screen py-4 px-2 sm:px-6 lg:px-8 text-slate-800 dark:text-slate-200 transition-colors duration-300">
+
+    <!-- Sync Modal -->
     <div id="syncModal" class="fixed inset-0 modal-overlay hidden z-50 flex items-center justify-center p-4 transition-opacity">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden transform scale-100 transition-transform border border-sky-100">
-            <div class="bg-sky-600 p-5 text-center relative">
+        <div class="bg-white dark:bg-darkCard rounded-2xl shadow-2xl w-full max-w-md overflow-hidden transform scale-100 transition-transform border border-sky-100 dark:border-darkBorder">
+            <div class="bg-sky-600 p-5 text-center relative neon-glow">
                 <div class="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-3">
                     <i class="ph-bold ph-warning-circle text-2xl text-white"></i>
                 </div>
@@ -40,80 +110,91 @@
                 <p class="text-sky-100 text-xs mt-1 leading-relaxed">আপনার এই ডিভাইসে কিছু অফলাইন ডেটা রয়েছে। জিমেইল লগইন করার আগে আপনি কী করতে চান?</p>
             </div>
             <div class="p-4 space-y-2.5">
-                <button onclick="resolveConflict('merge')" class="w-full text-left bg-white hover:bg-sky-50 border border-sky-100 p-3 rounded-xl transition-all group">
+                <button onclick="resolveConflict('merge')" class="w-full text-left bg-white dark:bg-slate-800/50 hover:bg-sky-50 dark:hover:bg-slate-700/50 border border-sky-100 dark:border-darkBorder p-3 rounded-xl transition-all group neon-glow-hover">
                     <div class="flex items-center gap-3">
-                        <div class="bg-sky-100 p-2 rounded-lg text-sky-600 group-hover:scale-110 transition-transform"><i class="ph-bold ph-git-merge text-lg"></i></div>
+                        <div class="bg-sky-100 dark:bg-sky-900/50 p-2 rounded-lg text-sky-600 dark:text-sky-400 group-hover:scale-110 transition-transform"><i class="ph-bold ph-git-merge text-lg"></i></div>
                         <div>
-                            <h4 class="text-sm font-bold text-slate-800">ডাটা মার্জ করুন (Merge)</h4>
-                            <p class="text-[11px] text-slate-500 leading-tight mt-0.5">লোকাল এবং ক্লাউডের সব ডেটা একসাথে যুক্ত হয়ে যাবে। কোনো ডেটা মুছবে না।</p>
+                            <h4 class="text-sm font-bold text-slate-800 dark:text-slate-200">ডাটা মার্জ করুন (Merge)</h4>
+                            <p class="text-[11px] text-slate-500 dark:text-slate-400 leading-tight mt-0.5">লোকাল এবং ক্লাউডের সব ডেটা একসাথে যুক্ত হয়ে যাবে।</p>
                         </div>
                     </div>
                 </button>
-                <button onclick="resolveConflict('export')" class="w-full text-left bg-white hover:bg-emerald-50 border border-emerald-100 p-3 rounded-xl transition-all group">
+                <button onclick="resolveConflict('export')" class="w-full text-left bg-white dark:bg-slate-800/50 hover:bg-emerald-50 dark:hover:bg-slate-700/50 border border-emerald-100 dark:border-darkBorder p-3 rounded-xl transition-all group neon-glow-hover">
                     <div class="flex items-center gap-3">
-                        <div class="bg-emerald-100 p-2 rounded-lg text-emerald-600 group-hover:scale-110 transition-transform"><i class="ph-bold ph-download-simple text-lg"></i></div>
+                        <div class="bg-emerald-100 dark:bg-emerald-900/50 p-2 rounded-lg text-emerald-600 dark:text-emerald-400 group-hover:scale-110 transition-transform"><i class="ph-bold ph-download-simple text-lg"></i></div>
                         <div>
-                            <h4 class="text-sm font-bold text-slate-800">এক্সপোর্ট ও ক্লাউড লোড</h4>
-                            <p class="text-[11px] text-slate-500 leading-tight mt-0.5">লোকাল ডাটা .json ফাইলে ডাউনলোড হবে এবং ক্লাউডের ডাটা লোড হবে।</p>
+                            <h4 class="text-sm font-bold text-slate-800 dark:text-slate-200">এক্সপোর্ট ও ক্লাউড লোড</h4>
+                            <p class="text-[11px] text-slate-500 dark:text-slate-400 leading-tight mt-0.5">লোকাল ডাটা .json ফাইলে ডাউনলোড হবে এবং ক্লাউডের ডাটা লোড হবে।</p>
                         </div>
                     </div>
                 </button>
-                <button onclick="resolveConflict('cloud')" class="w-full text-left bg-white hover:bg-rose-50 border border-rose-100 p-3 rounded-xl transition-all group">
+                <button onclick="resolveConflict('cloud')" class="w-full text-left bg-white dark:bg-slate-800/50 hover:bg-rose-50 dark:hover:bg-slate-700/50 border border-rose-100 dark:border-darkBorder p-3 rounded-xl transition-all group neon-glow-hover">
                     <div class="flex items-center gap-3">
-                        <div class="bg-rose-100 p-2 rounded-lg text-rose-600 group-hover:scale-110 transition-transform"><i class="ph-bold ph-cloud text-lg"></i></div>
+                        <div class="bg-rose-100 dark:bg-rose-900/50 p-2 rounded-lg text-rose-600 dark:text-rose-400 group-hover:scale-110 transition-transform"><i class="ph-bold ph-cloud text-lg"></i></div>
                         <div>
-                            <h4 class="text-sm font-bold text-slate-800">শুধু ক্লাউড ডাটা রাখুন</h4>
-                            <p class="text-[11px] text-slate-500 leading-tight mt-0.5">লোকালের ডাটা মুছে যাবে এবং শুধু জিমেইলের ক্লাউড ডাটা দেখাবে।</p>
+                            <h4 class="text-sm font-bold text-slate-800 dark:text-slate-200">শুধু ক্লাউড ডাটা রাখুন</h4>
+                            <p class="text-[11px] text-slate-500 dark:text-slate-400 leading-tight mt-0.5">লোকালের ডাটা মুছে যাবে এবং শুধু ক্লাউড ডাটা দেখাবে।</p>
                         </div>
                     </div>
                 </button>
             </div>
-            <div class="bg-sky-50 p-3 text-center border-t border-sky-100">
-                <button onclick="closeModal()" class="text-slate-500 text-xs font-semibold hover:text-slate-800 transition-colors">বাতিল করুন</button>
+            <div class="bg-sky-50 dark:bg-slate-800 p-3 text-center border-t border-sky-100 dark:border-darkBorder">
+                <button onclick="closeModal()" class="text-slate-500 dark:text-slate-400 text-xs font-semibold hover:text-slate-800 dark:hover:text-slate-200 transition-colors">বাতিল করুন</button>
             </div>
         </div>
     </div>
 
     <div class="max-w-5xl mx-auto">
         <!-- Header -->
-        <header class="bg-white p-3 sm:p-5 rounded-2xl shadow-sm border border-sky-100 mb-4 flex flex-col md:flex-row justify-between items-center gap-3">
+        <header class="glass-card bg-white p-3 sm:p-5 rounded-2xl shadow-sm border border-sky-100 dark:border-darkBorder mb-4 flex flex-col md:flex-row justify-between items-center gap-3 transition-colors">
             <div class="text-center md:text-left">
                 <div class="flex flex-wrap items-center justify-center md:justify-start gap-2">
-                    <h1 class="text-xl sm:text-2xl font-extrabold text-slate-800 flex items-center gap-2">
-                        <i class="ph-bold ph-book-open text-sky-600"></i> <span id="app-title">স্মার্ট লেনদেন খাতা</span>
+                    <h1 class="text-xl sm:text-2xl font-extrabold text-slate-800 dark:text-slate-100 flex items-center gap-2">
+                        <i class="ph-bold ph-book-open text-sky-600 dark:text-sky-400"></i> <span id="app-title">স্মার্ট লেনদেন খাতা</span>
                     </h1>
-                    <span class="text-[10px] bg-sky-50 text-sky-600 px-2 py-0.5 rounded-full border border-sky-200 font-semibold" id="brand-badge">Developed by Cybrfix</span>
+                    <span class="text-[10px] bg-sky-50 dark:bg-slate-800 text-sky-600 dark:text-sky-300 px-2 py-0.5 rounded-full border border-sky-200 dark:border-slate-600 font-semibold" id="brand-badge">Developed by Cybrfix</span>
                 </div>
-                <p class="text-slate-500 mt-0.5 text-xs" id="app-subtitle">ব্যক্তিভিত্তিক খাতা ও সহজ লেনদেন ট্র্যাকার</p>
+                <p class="text-slate-500 dark:text-slate-400 mt-0.5 text-xs" id="app-subtitle">ব্যক্তিভিত্তিক খাতা ও সহজ লেনদেন ট্র্যাকার</p>
             </div>
 
             <!-- Header Controls -->
             <div class="flex flex-wrap items-center justify-center gap-2">
+                <!-- 🌙 Dark Mode Toggle Button -->
+                <button onclick="toggleDarkMode()" class="w-8 h-8 flex items-center justify-center bg-sky-50 dark:bg-slate-800 hover:bg-sky-100 dark:hover:bg-slate-700 text-sky-600 dark:text-yellow-400 rounded-xl border border-sky-100 dark:border-slate-600 transition-all shadow-sm" title="থিম পরিবর্তন করুন">
+                    <i id="darkModeIcon" class="ph-bold ph-moon text-sm"></i>
+                </button>
+
                 <!-- Language Switcher -->
-                <div class="bg-sky-50 rounded-xl p-1 flex items-center border border-sky-100">
+                <div class="bg-sky-50 dark:bg-slate-800 rounded-xl p-1 flex items-center border border-sky-100 dark:border-slate-600">
                     <button onclick="switchLanguage('bn')" id="lang-bn" class="px-2.5 py-1 text-xs font-semibold rounded-lg transition-all bg-sky-600 text-white shadow-sm">বাংলা</button>
-                    <button onclick="switchLanguage('en')" id="lang-en" class="px-2.5 py-1 text-xs font-semibold rounded-lg transition-all text-slate-600 hover:text-slate-900">English</button>
+                    <button onclick="switchLanguage('en')" id="lang-en" class="px-2.5 py-1 text-xs font-semibold rounded-lg transition-all text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white">English</button>
                 </div>
 
                 <!-- Google Auth Button / User Profile -->
                 <div id="auth-container">
-                    <button onclick="handleLoginClick()" id="login-btn" class="flex items-center gap-1.5 bg-sky-600 hover:bg-sky-700 text-white px-3 py-1.5 rounded-xl text-xs font-semibold shadow-md shadow-sky-200 transition-all">
-                        <i class="ph-bold ph-google-logo text-sm"></i>
+                    <button onclick="handleLoginClick()" id="login-btn" class="flex items-center gap-2 bg-sky-600 hover:bg-sky-700 text-white px-3 py-1.5 rounded-xl text-xs font-semibold shadow-md shadow-sky-200 dark:shadow-sky-900/50 transition-all neon-glow-hover">
+                        <!-- 🔥 আসল গুগল আইকন (SVG) -->
+                        <svg class="w-4 h-4 bg-white rounded-full p-0.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+                            <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                            <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+                            <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+                        </svg>
                         <span id="login-text">জিমেইল লগইন</span>
                     </button>
-                    <div id="user-profile" class="hidden flex items-center gap-2 bg-sky-50 px-3 py-1 rounded-xl border border-sky-200">
-                        <img id="user-avatar" src="" alt="User" class="w-5 h-5 rounded-full border border-sky-300">
-                        <span id="user-name" class="text-xs font-semibold text-slate-700 max-w-[80px] truncate"></span>
-                        <button onclick="logoutUser()" class="text-slate-400 hover:text-rose-600 text-sm ml-1 transition-colors" title="লগআউট"><i class="ph-bold ph-sign-out"></i></button>
+                    <div id="user-profile" class="hidden flex items-center gap-2 bg-sky-50 dark:bg-slate-800 px-3 py-1 rounded-xl border border-sky-200 dark:border-slate-600">
+                        <img id="user-avatar" src="" alt="User" class="w-5 h-5 rounded-full border border-sky-300 dark:border-slate-500">
+                        <span id="user-name" class="text-xs font-semibold text-slate-700 dark:text-slate-200 max-w-[80px] truncate"></span>
+                        <button onclick="logoutUser()" class="text-slate-400 dark:text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 text-sm ml-1 transition-colors" title="লগআউট"><i class="ph-bold ph-sign-out"></i></button>
                     </div>
                 </div>
 
                 <!-- Backup & Restore -->
                 <div class="flex items-center gap-1">
-                    <button onclick="exportData()" class="px-2 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-600 rounded-xl text-xs font-semibold flex items-center gap-1 transition-colors border border-emerald-200" title="ব্যাকআপ">
+                    <button onclick="exportData()" class="px-2 py-1.5 bg-emerald-50 dark:bg-emerald-900/30 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 text-emerald-600 dark:text-emerald-400 rounded-xl text-xs font-semibold flex items-center gap-1 transition-colors border border-emerald-200 dark:border-emerald-800" title="ব্যাকআপ">
                         <i class="ph-bold ph-download-simple"></i> <span class="hidden sm:inline">Export</span>
                     </button>
-                    <label class="px-2 py-1.5 bg-sky-50 hover:bg-sky-100 text-sky-600 rounded-xl text-xs font-semibold flex items-center gap-1 transition-colors border border-sky-200 cursor-pointer" title="ইম্পোর্ট">
+                    <label class="px-2 py-1.5 bg-sky-50 dark:bg-slate-800 hover:bg-sky-100 dark:hover:bg-slate-700 text-sky-600 dark:text-sky-300 rounded-xl text-xs font-semibold flex items-center gap-1 transition-colors border border-sky-200 dark:border-slate-600 cursor-pointer" title="ইম্পোর্ট">
                         <i class="ph-bold ph-upload-simple"></i> <span class="hidden sm:inline">Import</span>
                         <input type="file" id="importFile" accept=".json" onchange="importData(event)" class="hidden">
                     </label>
@@ -121,54 +202,52 @@
             </div>
         </header>
 
-        <!-- Cloud Sync Notification Banner -->
-        <div id="sync-banner" class="bg-amber-50 border border-amber-200 text-amber-800 px-3 py-2 rounded-xl text-xs mb-4 flex items-center justify-between shadow-sm">
+        <!-- Sync Banner -->
+        <div id="sync-banner" class="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800/50 text-amber-800 dark:text-amber-200 px-3 py-2 rounded-xl text-xs mb-4 flex items-center justify-between shadow-sm transition-colors">
             <div class="flex items-center gap-2">
-                <i class="ph-bold ph-cloud-arrow-up text-base text-amber-600"></i>
+                <i class="ph-bold ph-cloud-arrow-up text-base text-amber-600 dark:text-amber-400"></i>
                 <span id="sync-banner-text">আপনি অফলাইন মোডে আছেন। ডাটা আপনার ব্রাউজারে সেভ হচ্ছে।</span>
             </div>
         </div>
 
         <!-- Summary Cards -->
         <div class="grid grid-cols-3 gap-2 sm:gap-4 mb-4">
-            <div class="bg-white p-3 sm:p-5 rounded-2xl shadow-sm border border-sky-100 text-center sm:text-left">
-                <p class="text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-wider" id="lbl-total-get">পাওনা ( পাবো )</p>
-                <h3 id="totalReceivable" class="text-base sm:text-2xl font-black text-emerald-600 mt-1">৳ 0</h3>
+            <div class="glass-card bg-white p-3 sm:p-5 rounded-2xl shadow-sm border border-sky-100 dark:border-darkBorder text-center sm:text-left transition-colors">
+                <p class="text-[10px] sm:text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider" id="lbl-total-get">পাওনা ( পাবো )</p>
+                <h3 id="totalReceivable" class="text-base sm:text-2xl font-black text-emerald-600 dark:text-emerald-400 mt-1">৳ 0</h3>
             </div>
-            <div class="bg-white p-3 sm:p-5 rounded-2xl shadow-sm border border-sky-100 text-center sm:text-left">
-                <p class="text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-wider" id="lbl-total-give">দেনা ( দিতে হবে )</p>
-                <h3 id="totalPayable" class="text-base sm:text-2xl font-black text-rose-600 mt-1">৳ 0</h3>
+            <div class="glass-card bg-white p-3 sm:p-5 rounded-2xl shadow-sm border border-sky-100 dark:border-darkBorder text-center sm:text-left transition-colors">
+                <p class="text-[10px] sm:text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider" id="lbl-total-give">দেনা ( দিতে হবে )</p>
+                <h3 id="totalPayable" class="text-base sm:text-2xl font-black text-rose-600 dark:text-rose-400 mt-1">৳ 0</h3>
             </div>
-            <div class="bg-white p-3 sm:p-5 rounded-2xl shadow-sm border border-sky-100 text-center sm:text-left">
-                <p class="text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-wider" id="lbl-total-balance">ব্যালেন্স</p>
-                <h3 id="netBalance" class="text-base sm:text-2xl font-black text-sky-600 mt-1">৳ 0</h3>
+            <div class="glass-card bg-white p-3 sm:p-5 rounded-2xl shadow-sm border border-sky-100 dark:border-darkBorder text-center sm:text-left transition-colors">
+                <p class="text-[10px] sm:text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider" id="lbl-total-balance">ব্যালেন্স</p>
+                <h3 id="netBalance" class="text-base sm:text-2xl font-black text-sky-600 dark:text-sky-400 mt-1">৳ 0</h3>
             </div>
         </div>
 
-        <!-- VIEW 1: Home / Person Selection Screen -->
+        <!-- Home View -->
         <div id="homeView" class="space-y-4">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <!-- Add Person Form -->
-                <div class="bg-white p-4 sm:p-6 rounded-2xl shadow-sm border border-sky-100">
-                    <h2 class="text-md font-bold text-slate-800 mb-3 flex items-center gap-2">
-                        <i class="ph-bold ph-user-plus text-sky-600"></i> <span id="sec-add-person">নতুন ব্যক্তি যোগ করুন</span>
+                <div class="glass-card bg-white p-4 sm:p-6 rounded-2xl shadow-sm border border-sky-100 dark:border-darkBorder transition-colors">
+                    <h2 class="text-md font-bold text-slate-800 dark:text-slate-200 mb-3 flex items-center gap-2">
+                        <i class="ph-bold ph-user-plus text-sky-600 dark:text-sky-400"></i> <span id="sec-add-person">নতুন ব্যক্তি যোগ করুন</span>
                     </h2>
                     <form id="addPersonForm" class="space-y-3">
-                        <input type="text" id="newPersonName" required placeholder="ব্যক্তির নাম..." class="w-full px-3 py-2 border border-sky-100 rounded-xl text-sm focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 bg-sky-50/30">
-                        <input type="text" id="newPersonPhone" placeholder="মোবাইল নম্বর (অপশনাল)..." class="w-full px-3 py-2 border border-sky-100 rounded-xl text-sm focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 bg-sky-50/30">
-                        <button type="submit" id="btn-save-person" class="w-full bg-sky-600 hover:bg-sky-700 text-white font-semibold py-2 px-4 rounded-xl text-sm transition-all shadow-md shadow-sky-200">
+                        <input type="text" id="newPersonName" required placeholder="ব্যক্তির নাম..." class="w-full px-3 py-2 border border-sky-100 dark:border-darkBorder rounded-xl text-sm focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 bg-sky-50/30 dark:bg-slate-800/50 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500">
+                        <input type="text" id="newPersonPhone" placeholder="মোবাইল নম্বর (অপশনাল)..." class="w-full px-3 py-2 border border-sky-100 dark:border-darkBorder rounded-xl text-sm focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 bg-sky-50/30 dark:bg-slate-800/50 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500">
+                        <button type="submit" id="btn-save-person" class="w-full bg-sky-600 hover:bg-sky-700 text-white font-semibold py-2 px-4 rounded-xl text-sm transition-all shadow-md shadow-sky-200 dark:shadow-sky-900/50 neon-glow-hover">
                             ব্যক্তি যুক্ত করুন
                         </button>
                     </form>
                 </div>
 
-                <!-- Person Selection & Search -->
-                <div class="bg-white p-4 sm:p-6 rounded-2xl shadow-sm border border-sky-100 md:col-span-2 flex flex-col justify-between">
+                <div class="glass-card bg-white p-4 sm:p-6 rounded-2xl shadow-sm border border-sky-100 dark:border-darkBorder md:col-span-2 flex flex-col justify-between transition-colors">
                     <div>
-                        <h2 class="text-md font-bold text-slate-800 mb-3 flex items-center gap-2">
-                            <i class="ph-bold ph-users text-sky-600"></i> <span id="sec-select-person">ব্যক্তি নির্বাচন করুন (খাতা খুলুন)</span>
+                        <h2 class="text-md font-bold text-slate-800 dark:text-slate-200 mb-3 flex items-center gap-2">
+                            <i class="ph-bold ph-users text-sky-600 dark:text-sky-400"></i> <span id="sec-select-person">ব্যক্তি নির্বাচন করুন (খাতা খুলুন)</span>
                         </h2>
-                        <input type="text" id="searchPerson" oninput="renderPersonList()" placeholder="নাম বা মোবাইল দিয়ে খুঁজুন..." class="w-full mb-3 px-3 py-2 border border-sky-100 rounded-xl text-sm focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 bg-sky-50/30">
+                        <input type="text" id="searchPerson" oninput="renderPersonList()" placeholder="নাম বা মোবাইল দিয়ে খুঁজুন..." class="w-full mb-3 px-3 py-2 border border-sky-100 dark:border-darkBorder rounded-xl text-sm focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 bg-sky-50/30 dark:bg-slate-800/50 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500">
                     </div>
                     <div id="personList" class="flex flex-wrap gap-2 max-h-48 overflow-y-auto p-1">
                         <!-- Dynamic Person Buttons -->
@@ -177,54 +256,53 @@
             </div>
         </div>
 
-        <!-- VIEW 2: Active Person Ledger Screen -->
-        <div id="ledgerView" class="hidden bg-white rounded-2xl shadow-sm border border-sky-100 p-3 sm:p-6 mb-6">
+        <!-- Ledger View -->
+        <div id="ledgerView" class="hidden glass-card bg-white rounded-2xl shadow-sm border border-sky-100 dark:border-darkBorder p-3 sm:p-6 mb-6 transition-colors">
             <div class="flex items-center justify-between mb-3">
-                <button onclick="goBackToHome()" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-sky-50 hover:bg-sky-100 text-sky-700 rounded-xl text-xs font-semibold transition-all border border-sky-200">
+                <button onclick="goBackToHome()" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-sky-50 dark:bg-slate-800 hover:bg-sky-100 dark:hover:bg-slate-700 text-sky-700 dark:text-slate-300 rounded-xl text-xs font-semibold transition-all border border-sky-200 dark:border-slate-600">
                     <i class="ph-bold ph-arrow-left text-sm"></i> <span id="btn-back">তালিকায় ফিরে যান</span>
                 </button>
-                <button onclick="deleteActivePerson()" class="inline-flex items-center gap-1 px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-xl text-xs font-semibold transition-all border border-rose-200" title="এই খাতাটি মুছে ফেলুন">
+                <button onclick="deleteActivePerson()" class="inline-flex items-center gap-1 px-3 py-1.5 bg-rose-50 dark:bg-rose-900/30 hover:bg-rose-100 dark:hover:bg-rose-900/50 text-rose-600 dark:text-rose-400 rounded-xl text-xs font-semibold transition-all border border-rose-200 dark:border-rose-800" title="এই খাতাটি মুছে ফেলুন">
                     <i class="ph-bold ph-trash text-sm"></i> <span id="btn-delete-person">খাতা ডিলিট করুন</span>
                 </button>
             </div>
 
-            <div class="flex flex-col sm:flex-row justify-between sm:items-center border-b border-sky-100 pb-3 mb-4 gap-2">
+            <div class="flex flex-col sm:flex-row justify-between sm:items-center border-b border-sky-100 dark:border-darkBorder pb-3 mb-4 gap-2">
                 <div>
-                    <h2 class="text-lg sm:text-xl font-bold text-slate-800 flex items-center gap-2">
-                        <i class="ph-bold ph-user text-sky-600"></i> <span id="activePersonName">-</span>
+                    <h2 class="text-lg sm:text-xl font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
+                        <i class="ph-bold ph-user text-sky-600 dark:text-sky-400"></i> <span id="activePersonName">-</span>
                     </h2>
-                    <p id="activePersonPhone" class="text-xs text-slate-400"></p>
+                    <p id="activePersonPhone" class="text-xs text-slate-400 dark:text-slate-500"></p>
                 </div>
                 <div class="text-right">
-                    <span class="text-[11px] text-slate-400 block font-semibold" id="lbl-current-status">বর্তমান হিসাব</span>
+                    <span class="text-[11px] text-slate-400 dark:text-slate-500 block font-semibold" id="lbl-current-status">বর্তমান হিসাব</span>
                     <span id="activePersonBalance" class="text-lg sm:text-xl font-black">৳ 0</span>
                 </div>
             </div>
 
-            <!-- Transaction Form -->
-            <form id="addTransactionForm" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2.5 mb-4 bg-sky-50/50 p-3 sm:p-4 rounded-xl border border-sky-100">
+            <form id="addTransactionForm" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2.5 mb-4 bg-sky-50/50 dark:bg-slate-800/30 p-3 sm:p-4 rounded-xl border border-sky-100 dark:border-darkBorder">
                 <input type="hidden" id="editingTransId" value="">
                 <div>
-                    <label class="block text-xs font-semibold text-slate-600 mb-1" id="lbl-tx-type">লেনদেনের ধরণ</label>
-                    <select id="transType" class="w-full px-3 py-2 border border-sky-100 rounded-xl text-sm focus:outline-none focus:border-sky-500 font-medium bg-white">
+                    <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1" id="lbl-tx-type">লেনদেনের ধরণ</label>
+                    <select id="transType" class="w-full px-3 py-2 border border-sky-100 dark:border-darkBorder rounded-xl text-sm focus:outline-none focus:border-sky-500 font-medium bg-white dark:bg-slate-800 dark:text-slate-200">
                         <option value="give" id="opt-give">দিলাম (পকেট থেকে গেল)</option>
                         <option value="receive" id="opt-receive">পেলাম (পকেটে আসলো)</option>
                     </select>
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold text-slate-600 mb-1" id="lbl-tx-amount">টাকার পরিমাণ (৳)</label>
-                    <input type="number" id="transAmount" required min="1" placeholder="০.০০" class="w-full px-3 py-2 border border-sky-100 rounded-xl text-sm focus:outline-none focus:border-sky-500 bg-white">
+                    <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1" id="lbl-tx-amount">টাকার পরিমাণ (৳)</label>
+                    <input type="number" id="transAmount" required min="1" placeholder="০.০০" class="w-full px-3 py-2 border border-sky-100 dark:border-darkBorder rounded-xl text-sm focus:outline-none focus:border-sky-500 bg-white dark:bg-slate-800 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500">
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold text-slate-600 mb-1" id="lbl-tx-date">তারিখ (ইংরেজি)</label>
-                    <input type="text" id="transDate" required placeholder="DD MMM YYYY" class="w-full px-3 py-2 border border-sky-100 rounded-xl text-sm focus:outline-none focus:border-sky-500 font-mono bg-white">
+                    <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1" id="lbl-tx-date">তারিখ</label>
+                    <input type="date" id="transDate" required class="w-full px-3 py-2 border border-sky-100 dark:border-darkBorder rounded-xl text-sm focus:outline-none focus:border-sky-500 font-mono bg-white dark:bg-slate-800 dark:text-slate-200">
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold text-slate-600 mb-1" id="lbl-tx-note">বিবরণ / নোট</label>
-                    <input type="text" id="transNote" placeholder="কারণ বা নোট..." class="w-full px-3 py-2 border border-sky-100 rounded-xl text-sm focus:outline-none focus:border-sky-500 bg-white">
+                    <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1" id="lbl-tx-note">বিবরণ / নোট</label>
+                    <input type="text" id="transNote" placeholder="কারণ বা নোট..." class="w-full px-3 py-2 border border-sky-100 dark:border-darkBorder rounded-xl text-sm focus:outline-none focus:border-sky-500 bg-white dark:bg-slate-800 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500">
                 </div>
                 <div class="flex items-end gap-1">
-                    <button type="submit" id="formSubmitBtn" class="w-full bg-sky-600 hover:bg-sky-700 text-white font-semibold py-2 px-3 rounded-xl text-sm transition-all shadow-md shadow-sky-200">
+                    <button type="submit" id="formSubmitBtn" class="w-full bg-sky-600 hover:bg-sky-700 text-white font-semibold py-2 px-3 rounded-xl text-sm transition-all shadow-md shadow-sky-200 dark:shadow-sky-900/50 neon-glow-hover">
                         যোগ করুন
                     </button>
                     <button type="button" id="cancelEditBtn" onclick="resetForm()" class="hidden bg-slate-400 hover:bg-slate-500 text-white py-2 px-2 rounded-xl text-sm transition-colors">
@@ -233,11 +311,10 @@
                 </div>
             </form>
 
-            <!-- Transactions Table -->
             <div class="overflow-x-auto w-full">
                 <table class="w-full text-left border-collapse text-xs sm:text-sm">
                     <thead>
-                        <tr class="bg-sky-50 text-slate-500 uppercase tracking-wider border-b border-sky-100">
+                        <tr class="bg-sky-50 dark:bg-slate-800 text-slate-500 dark:text-slate-400 uppercase tracking-wider border-b border-sky-100 dark:border-darkBorder">
                             <th class="py-2.5 px-2 sm:px-3" id="tbl-date">তারিখ</th>
                             <th class="py-2.5 px-2 sm:px-3" id="tbl-note">বিবরণ</th>
                             <th class="py-2.5 px-2 sm:px-3" id="tbl-type">ধরণ</th>
@@ -245,28 +322,51 @@
                             <th class="py-2.5 px-2 sm:px-3 text-center" id="tbl-action">অ্যাকশন</th>
                         </tr>
                     </thead>
-                    <tbody id="personTransTable" class="text-slate-700 divide-y divide-sky-50">
+                    <tbody id="personTransTable" class="text-slate-700 dark:text-slate-300 divide-y divide-sky-50 dark:divide-darkBorder">
                         <!-- Dynamic Rows -->
                     </tbody>
                 </table>
             </div>
             
-            <!-- Pagination Controls -->
-            <div id="paginationContainer" class="flex items-center justify-between pt-3 mt-3 border-t border-sky-100 text-xs">
-                <span id="pageInfo" class="text-slate-500">Showing page 1 of 1</span>
+            <div id="paginationContainer" class="flex items-center justify-between pt-3 mt-3 border-t border-sky-100 dark:border-darkBorder text-xs">
+                <span id="pageInfo" class="text-slate-500 dark:text-slate-400">Showing page 1 of 1</span>
                 <div class="flex items-center gap-1.5" id="pageButtons">
                     <!-- Dynamic Page Buttons -->
                 </div>
             </div>
 
-            <div id="noTransMsg" class="hidden text-center py-6 text-slate-400 text-xs sm:text-sm">
+            <div id="noTransMsg" class="hidden text-center py-6 text-slate-400 dark:text-slate-500 text-xs sm:text-sm">
                 এই ব্যক্তির সাথে এখনও কোনো লেনদেন রেকর্ড হয়নি।
             </div>
         </div>
     </div>
 
-    <!-- Scripting with Offline Support & Cloud Sync -->
+    <!-- Scripting -->
     <script>
+        // 🔥 Dark Mode লজিক
+        function toggleDarkMode() {
+            const html = document.documentElement;
+            const icon = document.getElementById('darkModeIcon');
+            if (html.classList.contains('dark')) {
+                html.classList.remove('dark');
+                localStorage.setItem('theme', 'light');
+                icon.className = 'ph-bold ph-moon text-sm';
+            } else {
+                html.classList.add('dark');
+                localStorage.setItem('theme', 'dark');
+                icon.className = 'ph-bold ph-sun text-sm';
+            }
+        }
+
+        // পেজ লোড হওয়ার সময় সেভ করা থিম চেক করা
+        if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+            document.getElementById('darkModeIcon').className = 'ph-bold ph-sun text-sm';
+        } else {
+            document.documentElement.classList.remove('dark');
+            document.getElementById('darkModeIcon').className = 'ph-bold ph-moon text-sm';
+        }
+
         // 🔧 আপনার ফায়ারবেস কনফিগারেশন
         const firebaseConfig = {
             apiKey: "AIzaSyAKJ_eOuRAnRvdJYPVXsVi16DjLxAGchiE",
@@ -283,15 +383,6 @@
         }
         const auth = firebase.auth();
         const db = firebase.firestore();
-
-        // 🔥 অফলাইন পার্সিস্টেন্স চালু করা (পেজ রিফ্রেশে ডেটা হারাবে না)
-        db.enablePersistence({ synchronizeTabs: true }).catch((err) => {
-            if (err.code == 'failed-precondition') {
-                console.log("Multiple tabs open, persistence can only be enabled in one tab at a a time.");
-            } else if (err.code == 'unimplemented') {
-                console.log("The current browser does not support all of the features required to enable persistence");
-            }
-        });
 
         let currentUser = null;
         let ledgerData = { persons: [] };
@@ -336,8 +427,8 @@
             currentLang = lang;
             localStorage.setItem('cybrfix_smart_khata_lang', lang);
             
-            document.getElementById('lang-bn').className = lang === 'bn' ? 'px-2.5 py-1 text-xs font-semibold rounded-lg transition-all bg-sky-600 text-white shadow-sm' : 'px-2.5 py-1 text-xs font-semibold rounded-lg transition-all text-slate-600 hover:text-slate-900';
-            document.getElementById('lang-en').className = lang === 'en' ? 'px-2.5 py-1 text-xs font-semibold rounded-lg transition-all bg-sky-600 text-white shadow-sm' : 'px-2.5 py-1 text-xs font-semibold rounded-lg transition-all text-slate-600 hover:text-slate-900';
+            document.getElementById('lang-bn').className = lang === 'bn' ? 'px-2.5 py-1 text-xs font-semibold rounded-lg transition-all bg-sky-600 text-white shadow-sm' : 'px-2.5 py-1 text-xs font-semibold rounded-lg transition-all text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white';
+            document.getElementById('lang-en').className = lang === 'en' ? 'px-2.5 py-1 text-xs font-semibold rounded-lg transition-all bg-sky-600 text-white shadow-sm' : 'px-2.5 py-1 text-xs font-semibold rounded-lg transition-all text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white';
 
             const t = translations[lang];
             document.getElementById('app-title').textContent = t.title;
@@ -368,6 +459,7 @@
             document.getElementById('noTransMsg').textContent = t.noTransMsg;
             document.getElementById('btn-back').textContent = t.backBtn;
             document.getElementById('btn-delete-person').textContent = t.deletePersonBtn;
+            document.getElementById('lbl-tx-date').textContent = t.tblDate;
             
             const submitBtn = document.getElementById('formSubmitBtn');
             submitBtn.textContent = editingTransIdEl.value ? t.updateTxBtn : t.addTxBtn;
@@ -404,7 +496,6 @@
             if (action === 'cloud') {
                 localStorage.removeItem('cybrfix_smart_khata_offline');
             } else if (action === 'export') {
-                // লোকাল ডাটা এক্সপোর্ট করা
                 const offlineDataStr = localStorage.getItem('cybrfix_smart_khata_offline');
                 if (offlineDataStr) {
                     const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(offlineDataStr);
@@ -415,7 +506,6 @@
                     downloadAnchor.click();
                     downloadAnchor.remove();
                 }
-                // এক্সপোর্টের পর লোকাল ডাটা মুছে ফেলা
                 localStorage.removeItem('cybrfix_smart_khata_offline');
             }
             loginWithGoogle();
@@ -423,6 +513,7 @@
 
         function loginWithGoogle() {
             const provider = new firebase.auth.GoogleAuthProvider();
+            provider.setCustomParameters({ prompt: 'select_account' });
             auth.signInWithPopup(provider).catch((error) => {
                 alert("Login Failed: " + error.message);
             });
@@ -444,7 +535,7 @@
             ledgerData = offlineData ? JSON.parse(offlineData) : { persons: [] };
             document.getElementById('login-btn').classList.remove('hidden');
             document.getElementById('user-profile').classList.add('hidden');
-            document.getElementById('sync-banner').className = "bg-amber-50 border border-amber-200 text-amber-800 px-3 py-2 rounded-xl text-xs mb-4 flex items-center justify-between shadow-sm";
+            document.getElementById('sync-banner').className = "bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800/50 text-amber-800 dark:text-amber-200 px-3 py-2 rounded-xl text-xs mb-4 flex items-center justify-between shadow-sm";
             document.getElementById('sync-banner-text').textContent = translations[currentLang].syncText;
         }
 
@@ -455,7 +546,7 @@
                 document.getElementById('user-profile').classList.remove('hidden');
                 document.getElementById('user-avatar').src = user.photoURL || 'https://via.placeholder.com/150';
                 document.getElementById('user-name').textContent = user.displayName || user.email;
-                document.getElementById('sync-banner').className = "bg-sky-50 border border-sky-200 text-sky-800 px-3 py-2 rounded-xl text-xs mb-4 flex items-center justify-between shadow-sm";
+                document.getElementById('sync-banner').className = "bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-darkBorder text-sky-800 dark:text-slate-200 px-3 py-2 rounded-xl text-xs mb-4 flex items-center justify-between shadow-sm";
                 document.getElementById('sync-banner-text').textContent = currentLang === 'bn' ? `স্বাগতম, ${user.displayName || 'ব্যবহারকারী'}! আপনার ডাটা ক্লাউডে সুরক্ষিত আছে।` : `Welcome, ${user.displayName || 'User'}! Data safely synced.`;
                 
                 initCloudSync(user.uid);
@@ -473,7 +564,6 @@
 
             unsubscribeSnapshot = docRef.onSnapshot({ includeMetadataChanges: true }, (doc) => {
                 const source = doc.metadata.fromCache ? "CACHE" : "SERVER";
-                console.log(`[Cloud Sync] from: ${source}, exists: ${doc.exists}, action: ${pendingLoginAction}`);
                 
                 if (doc.exists && doc.data().ledgerData) {
                     let cloudData = doc.data().ledgerData;
@@ -481,7 +571,6 @@
                     
                     if (offlineDataStr && pendingLoginAction === 'merge') {
                         const offlineData = JSON.parse(offlineDataStr);
-                        // মার্জ লজিক
                         offlineData.persons.forEach(offlinePerson => {
                             const existingPerson = cloudData.persons.find(p => p.id === offlinePerson.id);
                             if (existingPerson) {
@@ -572,9 +661,28 @@
         const transDateEl = document.getElementById('transDate');
 
         function getDefaultDate() {
-            const options = { day: 'numeric', month: 'short', year: 'numeric' };
-            return new Date().toLocaleDateString('en-GB', options);
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = String(today.getMonth() + 1).padStart(2, '0');
+            const day = String(today.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
         }
+
+        function formatDateForDisplay(dateString) {
+            if(!dateString) return '';
+            if(dateString.includes(' ')) {
+                const parts = dateString.split(' ');
+                const months = {Jan:'01',Feb:'02',Mar:'03',Apr:'04',May:'05',Jun:'06',Jul:'07',Aug:'08',Sep:'09',Oct:'10',Nov:'11',Dec:'12'};
+                dateString = `${parts[2]}-${months[parts[1]]}-${parts[0].padStart(2, '0')}`;
+            }
+            const date = new Date(dateString);
+            if (isNaN(date)) return dateString;
+            const day = String(date.getDate()).padStart(2, '0');
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const year = date.getFullYear();
+            return `${day}/${month}/${year}`;
+        }
+
         transDateEl.value = getDefaultDate();
 
         addPersonForm.addEventListener('submit', function(e) {
@@ -620,7 +728,7 @@
             document.getElementById('transNote').value = '';
             transDateEl.value = getDefaultDate();
             formSubmitBtn.textContent = translations[currentLang].addTxBtn;
-            formSubmitBtn.className = 'w-full bg-sky-600 hover:bg-sky-700 text-white font-semibold py-2 px-3 rounded-xl text-sm transition-all shadow-md shadow-sky-200';
+            formSubmitBtn.className = 'w-full bg-sky-600 hover:bg-sky-700 text-white font-semibold py-2 px-3 rounded-xl text-sm transition-all shadow-md shadow-sky-200 dark:shadow-sky-900/50 neon-glow-hover';
             cancelEditBtn.classList.add('hidden');
         }
 
@@ -632,11 +740,18 @@
                     editingTransIdEl.value = trans.id;
                     document.getElementById('transType').value = trans.type;
                     document.getElementById('transAmount').value = trans.amount;
-                    transDateEl.value = trans.date;
+                    
+                    if(trans.date.includes(' ')) {
+                        const parts = trans.date.split(' ');
+                        const months = {Jan:'01',Feb:'02',Mar:'03',Apr:'04',May:'05',Jun:'06',Jul:'07',Aug:'08',Sep:'09',Oct:'10',Nov:'11',Dec:'12'};
+                        transDateEl.value = `${parts[2]}-${months[parts[1]]}-${parts[0].padStart(2, '0')}`;
+                    } else {
+                        transDateEl.value = trans.date;
+                    }
                     document.getElementById('transNote').value = trans.note;
 
                     formSubmitBtn.textContent = translations[currentLang].updateTxBtn;
-                    formSubmitBtn.className = 'w-full bg-amber-500 hover:bg-amber-600 text-white font-semibold py-2 px-3 rounded-xl text-sm transition-all shadow-md shadow-amber-200';
+                    formSubmitBtn.className = 'w-full bg-amber-500 hover:bg-amber-600 text-white font-semibold py-2 px-3 rounded-xl text-sm transition-all shadow-md shadow-amber-200 dark:shadow-amber-900/50 neon-glow-hover';
                     cancelEditBtn.classList.remove('hidden');
                     addTransactionForm.scrollIntoView({ behavior: 'smooth' });
                 }
@@ -681,7 +796,7 @@
             );
 
             if(filtered.length === 0) {
-                personListEl.innerHTML = `<span class="text-xs text-slate-400">${currentLang === 'bn' ? 'কোনো নাম পাওয়া যায়নি।' : 'No names found.'}</span>`;
+                personListEl.innerHTML = `<span class="text-xs text-slate-400 dark:text-slate-500">${currentLang === 'bn' ? 'কোনো নাম পাওয়া যায়নি।' : 'No names found.'}</span>`;
                 return;
             }
 
@@ -690,14 +805,14 @@
                 const btn = document.createElement('button');
                 btn.type = 'button';
                 btn.onclick = () => selectPerson(p.id);
-                btn.className = `px-3.5 py-2 rounded-xl text-xs font-semibold flex items-center justify-between border transition-all bg-white hover:bg-sky-50 text-slate-700 border-sky-100`;
+                btn.className = `px-3.5 py-2 rounded-xl text-sm font-semibold flex items-center justify-between border transition-all bg-white dark:bg-slate-800/80 hover:bg-sky-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border-sky-100 dark:border-darkBorder shadow-sm neon-glow-hover`;
                 
-                let statusColor = bal > 0 ? 'text-emerald-600 font-bold' : (bal < 0 ? 'text-rose-600 font-bold' : 'text-slate-400');
+                let statusColor = bal > 0 ? 'text-emerald-600 dark:text-emerald-400 font-bold' : (bal < 0 ? 'text-rose-600 dark:text-rose-400 font-bold' : 'text-slate-400 dark:text-slate-500');
                 let statusLabel = bal > 0 ? `(${t.statusGet})` : (bal < 0 ? `(${t.statusGive})` : '');
 
                 btn.innerHTML = `
-                    <span class="flex items-center gap-1.5"><i class="ph-bold ph-user text-sky-500"></i> ${p.name}</span>
-                    <span class="text-xs ${statusColor}">৳${Math.abs(bal)} ${statusLabel}</span>
+                    <span class="flex items-center gap-1.5"><i class="ph-bold ph-user text-sky-500 dark:text-sky-400 text-base"></i> ${p.name}</span>
+                    <span class="text-sm ${statusColor} ml-2">৳${Math.abs(bal)} ${statusLabel}</span>
                 `;
                 personListEl.appendChild(btn);
             });
@@ -724,13 +839,13 @@
 
             if(bal > 0) {
                 activePersonBalanceEl.textContent = `${t.statusGet} ৳ ${bal.toLocaleString('en-IN')}`;
-                activePersonBalanceEl.className = 'text-lg sm:text-xl font-black text-emerald-600';
+                activePersonBalanceEl.className = 'text-lg sm:text-xl font-black text-emerald-600 dark:text-emerald-400';
             } else if(bal < 0) {
                 activePersonBalanceEl.textContent = `${t.statusGive} ৳ ${Math.abs(bal).toLocaleString('en-IN')}`;
-                activePersonBalanceEl.className = 'text-lg sm:text-xl font-black text-rose-600';
+                activePersonBalanceEl.className = 'text-lg sm:text-xl font-black text-rose-600 dark:text-rose-400';
             } else {
                 activePersonBalanceEl.textContent = `৳ 0 (${t.statusEqual})`;
-                activePersonBalanceEl.className = 'text-lg sm:text-xl font-black text-slate-500';
+                activePersonBalanceEl.className = 'text-lg sm:text-xl font-black text-slate-500 dark:text-slate-400';
             }
 
             personTransTable.innerHTML = '';
@@ -750,28 +865,30 @@
 
                 paginatedTransactions.forEach(tx => {
                     const row = document.createElement('tr');
-                    row.className = 'hover:bg-sky-50/50 transition-colors border-b border-sky-50';
+                    row.className = 'hover:bg-sky-50/50 dark:hover:bg-slate-800/80 transition-colors border-b border-sky-50 dark:border-darkBorder';
 
                     let isGive = (tx.type === 'give');
                     let typeText = isGive ? t.giveText : t.receiveText;
                     let typeBadge = isGive 
-                        ? `<span class="inline-block px-1.5 py-0.5 rounded text-[10px] sm:text-xs font-bold bg-emerald-50 text-emerald-600 whitespace-nowrap">${typeText}</span>`
-                        : `<span class="inline-block px-1.5 py-0.5 rounded text-[10px] sm:text-xs font-bold bg-rose-50 text-rose-600 whitespace-nowrap">${typeText}</span>`;
+                        ? `<span class="inline-block px-1.5 py-0.5 rounded text-[10px] sm:text-xs font-bold bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 whitespace-nowrap">${typeText}</span>`
+                        : `<span class="inline-block px-1.5 py-0.5 rounded text-[10px] sm:text-xs font-bold bg-rose-50 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400 whitespace-nowrap">${typeText}</span>`;
 
                     let displayNote = tx.note;
                     if(tx.note === 'দিলাম' || tx.note === 'Gave') displayNote = t.defaultGiveNote;
                     else if(tx.note === 'পেলাম' || tx.note === 'Received') displayNote = t.defaultReceiveNote;
 
+                    let displayDate = formatDateForDisplay(tx.date);
+
                     row.innerHTML = `
-                        <td class="py-2 px-2 sm:px-3 text-[11px] sm:text-xs text-slate-500 font-mono whitespace-nowrap">${tx.date}</td>
-                        <td class="py-2 px-2 sm:px-3 text-slate-700 text-xs font-medium max-w-[90px] sm:max-w-xs truncate" title="${displayNote}">${displayNote}</td>
+                        <td class="py-2 px-2 sm:px-3 text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 font-mono whitespace-nowrap">${displayDate}</td>
+                        <td class="py-2 px-2 sm:px-3 text-slate-700 dark:text-slate-300 text-xs font-medium max-w-[90px] sm:max-w-xs truncate" title="${displayNote}">${displayNote}</td>
                         <td class="py-2 px-2 sm:px-3 whitespace-nowrap">${typeBadge}</td>
-                        <td class="py-2 px-2 sm:px-3 font-bold text-slate-800 text-xs sm:text-sm text-right whitespace-nowrap">৳ ${tx.amount.toLocaleString('en-IN')}</td>
+                        <td class="py-2 px-2 sm:px-3 font-bold text-slate-800 dark:text-slate-200 text-xs sm:text-sm text-right whitespace-nowrap">৳ ${tx.amount.toLocaleString('en-IN')}</td>
                         <td class="py-2 px-2 sm:px-3 text-center space-x-1 whitespace-nowrap">
-                            <button onclick="editTransaction(${tx.id})" class="text-sky-400 hover:text-sky-600 transition-colors p-1" title="Edit">
+                            <button onclick="editTransaction(${tx.id})" class="text-sky-400 hover:text-sky-600 dark:text-sky-500 dark:hover:text-sky-300 transition-colors p-1" title="Edit">
                                 <i class="ph-bold ph-pencil-simple text-sm sm:text-base"></i>
                             </button>
-                            <button onclick="deleteTransaction(${tx.id})" class="text-slate-400 hover:text-rose-600 transition-colors p-1" title="Delete">
+                            <button onclick="deleteTransaction(${tx.id})" class="text-slate-400 hover:text-rose-600 dark:text-slate-500 dark:hover:text-rose-400 transition-colors p-1" title="Delete">
                                 <i class="ph-bold ph-trash text-sm sm:text-base"></i>
                             </button>
                         </td>
@@ -796,14 +913,14 @@
             prevBtn.textContent = '«';
             prevBtn.disabled = currentPage === 1;
             prevBtn.onclick = () => { if(currentPage > 1) { currentPage--; renderActiveLedger(); } };
-            prevBtn.className = `px-2 py-0.5 rounded-lg border text-xs font-semibold ${currentPage === 1 ? 'bg-slate-50 text-slate-300 border-slate-100 cursor-not-allowed' : 'bg-white text-slate-700 border-sky-200 hover:bg-sky-50'}`;
+            prevBtn.className = `px-2 py-0.5 rounded-lg border text-xs font-semibold ${currentPage === 1 ? 'bg-slate-50 dark:bg-slate-800 text-slate-300 dark:text-slate-600 border-slate-100 dark:border-darkBorder cursor-not-allowed' : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border-sky-200 dark:border-darkBorder hover:bg-sky-50 dark:hover:bg-slate-700'}`;
             pageButtons.appendChild(prevBtn);
 
             for(let i = 1; i <= totalPages; i++) {
                 const pageBtn = document.createElement('button');
                 pageBtn.textContent = i;
                 pageBtn.onclick = () => { currentPage = i; renderActiveLedger(); };
-                pageBtn.className = `px-2.5 py-0.5 rounded-lg border text-xs font-semibold ${currentPage === i ? 'bg-sky-600 text-white border-sky-600 shadow-sm' : 'bg-white text-slate-700 border-sky-200 hover:bg-sky-50'}`;
+                pageBtn.className = `px-2.5 py-0.5 rounded-lg border text-xs font-semibold ${currentPage === i ? 'bg-sky-600 text-white border-sky-600 shadow-sm' : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border-sky-200 dark:border-darkBorder hover:bg-sky-50 dark:hover:bg-slate-700'}`;
                 pageButtons.appendChild(pageBtn);
             }
 
@@ -811,7 +928,7 @@
             nextBtn.textContent = '»';
             nextBtn.disabled = currentPage === totalPages;
             nextBtn.onclick = () => { if(currentPage < totalPages) { currentPage++; renderActiveLedger(); } };
-            nextBtn.className = `px-2 py-0.5 rounded-lg border text-xs font-semibold ${currentPage === totalPages ? 'bg-slate-50 text-slate-300 border-slate-100 cursor-not-allowed' : 'bg-white text-slate-700 border-sky-200 hover:bg-sky-50'}`;
+            nextBtn.className = `px-2 py-0.5 rounded-lg border text-xs font-semibold ${currentPage === totalPages ? 'bg-slate-50 dark:bg-slate-800 text-slate-300 dark:text-slate-600 border-slate-100 dark:border-darkBorder cursor-not-allowed' : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border-sky-200 dark:border-darkBorder hover:bg-sky-50 dark:hover:bg-slate-700'}`;
             pageButtons.appendChild(nextBtn);
         }
 
@@ -843,7 +960,7 @@
             const net = totalReceivable - totalPayable;
             const netEl = document.getElementById('netBalance');
             netEl.textContent = `৳ ${net.toLocaleString('en-IN')}`;
-            netEl.className = `text-base sm:text-2xl font-black mt-1 ${net >= 0 ? 'text-emerald-600' : 'text-rose-600'}`;
+            netEl.className = `text-base sm:text-2xl font-black mt-1 ${net >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`;
         }
 
         function exportData() {
@@ -872,9 +989,24 @@
             }
         }
 
-        // চেক করা: অ্যাপ চালু হলে আগে অফলাইন ডাটা লোড হবে
+        // অ্যাপ চালু হলে আগে অফলাইন ডাটা লোড হবে
         loadOfflineData();
         switchLanguage(currentLang);
+
+        // 🔥 Service Worker ডাইনামিকভাবে রেজিস্টার করা (যাতে Chrome "Install" অপশন দেখায়)
+        if ('serviceWorker' in navigator) {
+            const swCode = `
+                self.addEventListener('fetch', function(event) {
+                    // আপাতত খালি, শুধু PWA ইনস্টলের শর্ত পূরণের জন্য
+                });
+            `;
+            const swBlob = new Blob([swCode], {type: 'application/javascript'});
+            const swUrl = URL.createObjectURL(swBlob);
+            
+            navigator.serviceWorker.register(swUrl).catch(err => {
+                console.log('Service Worker registration failed: ', err);
+            });
+        }
     </script>
 </body>
 </html>
