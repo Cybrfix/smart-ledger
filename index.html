@@ -8,8 +8,38 @@
     <!-- PWA Meta Tags -->
     <meta name="theme-color" content="#0284c7">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="Smart Ledger">
+    
+    <!-- 🔥 ম্যানিফেস্ট ফাইল সরাসরি HTML-এ (Blob ব্যবহার করে যাতে আলাদা ফাইল না লাগে) -->
+    <script>
+        const manifest = {
+            name: "Smart Ledger",
+            short_name: "Ledger",
+            start_url: "./index.html",
+            display: "standalone",
+            background_color: "#f0f9ff",
+            theme_color: "#0284c7",
+            icons: [
+                {
+                    src: "https://ui-avatars.com/api/?name=%E0%A7%B3&background=0284c7&color=fff&size=192&font-size=0.6",
+                    sizes: "192x192",
+                    type: "image/png"
+                },
+                {
+                    src: "https://ui-avatars.com/api/?name=%E0%A7%B3&background=0284c7&color=fff&size=512&font-size=0.6",
+                    sizes: "512x512",
+                    type: "image/png"
+                }
+            ]
+        };
+        const manifestBlob = new Blob([JSON.stringify(manifest)], {type: 'application/json'});
+        const manifestUrl = URL.createObjectURL(manifestBlob);
+        const link = document.createElement('link');
+        link.rel = 'manifest';
+        link.href = manifestUrl;
+        document.head.appendChild(link);
+    </script>
 
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -52,14 +82,8 @@
             box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
         }
 
-        .dark .neon-glow {
-            box-shadow: 0 0 15px rgba(14, 165, 233, 0.15);
-        }
-        
-        .dark .neon-glow-hover:hover {
-            box-shadow: 0 0 20px rgba(14, 165, 233, 0.3);
-            border-color: #0ea5e9;
-        }
+        .dark .neon-glow { box-shadow: 0 0 15px rgba(14, 165, 233, 0.15); }
+        .dark .neon-glow-hover:hover { box-shadow: 0 0 20px rgba(14, 165, 233, 0.3); border-color: #0ea5e9; }
 
         .dark input, .dark select {
             background-color: #0f172a !important;
@@ -80,22 +104,6 @@
         .dark ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 4px; }
         .dark ::-webkit-scrollbar-thumb:hover { background: #0ea5e9; }
     </style>
-
-    <script>
-        const iconSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><rect width="512" height="512" rx="100" fill="#0284c7"/><text x="50%" y="55%" font-size="300" text-anchor="middle" fill="#ffffff" dominant-baseline="middle" font-family="sans-serif">৳</text></svg>`;
-        const iconUrl = `data:image/svg+xml;base64,${btoa(iconSvg)}`;
-        const manifest = {
-            name: "Smart Ledger", short_name: "Ledger", start_url: "./", display: "standalone",
-            background_color: "#0b1120", theme_color: "#0284c7",
-            icons: [{ src: iconUrl, sizes: "192x192", type: "image/svg+xml" }, { src: iconUrl, sizes: "512x512", type: "image/svg+xml" }]
-        };
-        const manifestBlob = new Blob([JSON.stringify(manifest)], {type: 'application/json'});
-        const manifestUrl = URL.createObjectURL(manifestBlob);
-        const link = document.createElement('link');
-        link.rel = 'manifest';
-        link.href = manifestUrl;
-        document.head.appendChild(link);
-    </script>
 </head>
 <body class="bg-sky-50 dark:bg-darkBg min-h-screen py-4 px-2 sm:px-6 lg:px-8 text-slate-800 dark:text-slate-200 transition-colors duration-300">
 
@@ -173,7 +181,7 @@
                 <!-- Google Auth Button / User Profile -->
                 <div id="auth-container">
                     <button onclick="handleLoginClick()" id="login-btn" class="flex items-center gap-2 bg-sky-600 hover:bg-sky-700 text-white px-3 py-1.5 rounded-xl text-xs font-semibold shadow-md shadow-sky-200 dark:shadow-sky-900/50 transition-all neon-glow-hover">
-                        <!-- 🔥 আসল গুগল আইকন (SVG) -->
+                        <!-- আসল গুগল আইকন (SVG) -->
                         <svg class="w-4 h-4 bg-white rounded-full p-0.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                             <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
                             <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
@@ -343,7 +351,9 @@
 
     <!-- Scripting -->
     <script>
-        // 🔥 Dark Mode লজিক
+        // ==========================================
+        // 🔥 FIX 1: ডার্ক মোড ডিফল্টভাবে বন্ধ থাকবে
+        // ==========================================
         function toggleDarkMode() {
             const html = document.documentElement;
             const icon = document.getElementById('darkModeIcon');
@@ -358,8 +368,9 @@
             }
         }
 
-        // পেজ লোড হওয়ার সময় সেভ করা থিম চেক করা
-        if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+        // পেজ লোড হওয়ার সময় চেক করবে: ইউজার আগে ডার্ক মোড অন করেছিল কি না।
+        // ইউজার নতুন হলে (কোনো সেটিং নেই) ডিফল্টভাবে "লাইট মোড" থাকবে।
+        if (localStorage.getItem('theme') === 'dark') {
             document.documentElement.classList.add('dark');
             document.getElementById('darkModeIcon').className = 'ph-bold ph-sun text-sm';
         } else {
@@ -367,7 +378,7 @@
             document.getElementById('darkModeIcon').className = 'ph-bold ph-moon text-sm';
         }
 
-        // 🔧 আপনার ফায়ারবেস কনফিগারেশন
+        // 🔧 ফায়ারবেস কনফিগারেশন
         const firebaseConfig = {
             apiKey: "AIzaSyAKJ_eOuRAnRvdJYPVXsVi16DjLxAGchiE",
             authDomain: "cybrfix-smart-ledger.firebaseapp.com",
@@ -511,12 +522,35 @@
             loginWithGoogle();
         }
 
+        // ==========================================
+        // 🔥 FIX 2: iOS/Safari-তে গুগল লগইন ঠিক করা
+        // ==========================================
         function loginWithGoogle() {
             const provider = new firebase.auth.GoogleAuthProvider();
-            provider.setCustomParameters({ prompt: 'select_account' });
-            auth.signInWithPopup(provider).catch((error) => {
-                alert("Login Failed: " + error.message);
+            // prompt: 'select_account' দিলে ব্রাউজার সবসময় অ্যাকাউন্ট সিলেক্ট করার পেজ দেখাবে
+            provider.setCustomParameters({ 
+                prompt: 'select_account',
+                // iOS-এর জন্য বিশেষ প্যারামিটার
+                auth_type: 'reauthenticate'
             });
+
+            // iOS এর জন্য পপআপের বদলে রিডাইরেক্ট ব্যবহার করা ভালো
+            const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+            
+            if (isIOS) {
+                auth.signInWithRedirect(provider).catch((error) => {
+                    alert("Login Failed: " + error.message);
+                });
+            } else {
+                auth.signInWithPopup(provider).catch((error) => {
+                    // পপআপ ব্লক হলে ফলব্যাক হিসেবে রিডাইরেক্ট
+                    if (error.code === 'auth/popup-blocked' || error.code === 'auth/cancelled-popup-request') {
+                        auth.signInWithRedirect(provider);
+                    } else {
+                        alert("Login Failed: " + error.message);
+                    }
+                });
+            }
         }
 
         function logoutUser() {
@@ -538,6 +572,13 @@
             document.getElementById('sync-banner').className = "bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800/50 text-amber-800 dark:text-amber-200 px-3 py-2 rounded-xl text-xs mb-4 flex items-center justify-between shadow-sm";
             document.getElementById('sync-banner-text').textContent = translations[currentLang].syncText;
         }
+
+        // গুগল রিডাইরেক্ট থেকে ফিরে আসার পর ডেটা ধরার জন্য
+        auth.getRedirectResult().catch((error) => {
+            if (error.code) {
+                console.error("Redirect login error:", error);
+            }
+        });
 
         auth.onAuthStateChanged((user) => {
             currentUser = user;
@@ -993,7 +1034,7 @@
         loadOfflineData();
         switchLanguage(currentLang);
 
-        // 🔥 Service Worker ডাইনামিকভাবে রেজিস্টার করা (যাতে Chrome "Install" অপশন দেখায়)
+        // 🔥 Service Worker রেজিস্ট্রেশন (অ্যাপ ইনস্টলের জন্য)
         if ('serviceWorker' in navigator) {
             const swCode = `
                 self.addEventListener('fetch', function(event) {
