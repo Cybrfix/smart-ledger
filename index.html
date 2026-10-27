@@ -11,7 +11,11 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="Smart Ledger">
     
-    <!-- 🔥 ম্যানিফেস্ট ফাইল সরাসরি HTML-এ (Blob ব্যবহার করে যাতে আলাদা ফাইল না লাগে) -->
+    <!-- 🔥 নতুন অ্যাপ আইকন (আপনার আপলোড করা icon.png) -->
+    <link rel="icon" type="image/png" href="icon.png">
+    <link rel="apple-touch-icon" href="icon.png">
+    
+    <!-- Manifest (ডাইনামিক - Android Chrome ইনস্টলের জন্য) -->
     <script>
         const manifest = {
             name: "Smart Ledger",
@@ -22,12 +26,12 @@
             theme_color: "#0284c7",
             icons: [
                 {
-                    src: "https://ui-avatars.com/api/?name=%E0%A7%B3&background=0284c7&color=fff&size=192&font-size=0.6",
+                    src: "icon.png",
                     sizes: "192x192",
                     type: "image/png"
                 },
                 {
-                    src: "https://ui-avatars.com/api/?name=%E0%A7%B3&background=0284c7&color=fff&size=512&font-size=0.6",
+                    src: "icon.png",
                     sizes: "512x512",
                     type: "image/png"
                 }
@@ -46,12 +50,12 @@
     <!-- Phosphor Icons -->
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     
-    <!-- Firebase SDKs (Compat) -->
+    <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 
-    <!-- 🔥 Tailwind Dark Mode কনফিগারেশন -->
+    <!-- Tailwind Dark Mode -->
     <script>
         tailwind.config = {
             darkMode: 'class',
@@ -107,7 +111,7 @@
 </head>
 <body class="bg-sky-50 dark:bg-darkBg min-h-screen py-4 px-2 sm:px-6 lg:px-8 text-slate-800 dark:text-slate-200 transition-colors duration-300">
 
-    <!-- Sync Modal -->
+    <!-- Sync Modal (অফলাইন ডাটা কনফ্লিক্ট) -->
     <div id="syncModal" class="fixed inset-0 modal-overlay hidden z-50 flex items-center justify-center p-4 transition-opacity">
         <div class="bg-white dark:bg-darkCard rounded-2xl shadow-2xl w-full max-w-md overflow-hidden transform scale-100 transition-transform border border-sky-100 dark:border-darkBorder">
             <div class="bg-sky-600 p-5 text-center relative neon-glow">
@@ -115,7 +119,7 @@
                     <i class="ph-bold ph-warning-circle text-2xl text-white"></i>
                 </div>
                 <h3 class="text-lg font-bold text-white">ডেটা সিঙ্ক্রোনাইজেশন</h3>
-                <p class="text-sky-100 text-xs mt-1 leading-relaxed">আপনার এই ডিভাইসে কিছু অফলাইন ডেটা রয়েছে। জিমেইল লগইন করার আগে আপনি কী করতে চান?</p>
+                <p class="text-sky-100 text-xs mt-1 leading-relaxed">আপনার এই ডিভাইসে কিছু অফলাইন ডেটা রয়েছে। জিমেইল লগইন করার আগে আপনি কী করতে চান?</p>
             </div>
             <div class="p-4 space-y-2.5">
                 <button onclick="resolveConflict('merge')" class="w-full text-left bg-white dark:bg-slate-800/50 hover:bg-sky-50 dark:hover:bg-slate-700/50 border border-sky-100 dark:border-darkBorder p-3 rounded-xl transition-all group neon-glow-hover">
@@ -123,7 +127,7 @@
                         <div class="bg-sky-100 dark:bg-sky-900/50 p-2 rounded-lg text-sky-600 dark:text-sky-400 group-hover:scale-110 transition-transform"><i class="ph-bold ph-git-merge text-lg"></i></div>
                         <div>
                             <h4 class="text-sm font-bold text-slate-800 dark:text-slate-200">ডাটা মার্জ করুন (Merge)</h4>
-                            <p class="text-[11px] text-slate-500 dark:text-slate-400 leading-tight mt-0.5">লোকাল এবং ক্লাউডের সব ডেটা একসাথে যুক্ত হয়ে যাবে।</p>
+                            <p class="text-[11px] text-slate-500 dark:text-slate-400 leading-tight mt-0.5">লোকাল এবং ক্লাউডের সব ডেটা একসাথে যুক্ত হয়ে যাবে।</p>
                         </div>
                     </div>
                 </button>
@@ -167,9 +171,20 @@
 
             <!-- Header Controls -->
             <div class="flex flex-wrap items-center justify-center gap-2">
+                <!-- 📲 Android Install Button -->
+                <button id="pwaInstallBtn" onclick="installPWA()" class="hidden items-center gap-1 bg-emerald-600 hover:bg-emerald-700 text-white px-2.5 py-1.5 rounded-xl text-xs font-semibold shadow-sm transition-all">
+                    <i class="ph-bold ph-device-mobile-speaker"></i> <span>Install App</span>
+                </button>
+
                 <!-- 🌙 Dark Mode Toggle Button -->
-                <button onclick="toggleDarkMode()" class="w-8 h-8 flex items-center justify-center bg-sky-50 dark:bg-slate-800 hover:bg-sky-100 dark:hover:bg-slate-700 text-sky-600 dark:text-yellow-400 rounded-xl border border-sky-100 dark:border-slate-600 transition-all shadow-sm" title="থিম পরিবর্তন করুন">
-                    <i id="darkModeIcon" class="ph-bold ph-moon text-sm"></i>
+                <button onclick="toggleDarkMode()" aria-label="Toggle Theme" class="w-8 h-8 flex items-center justify-center bg-sky-50 dark:bg-slate-800 hover:bg-sky-100 dark:hover:bg-slate-700 rounded-xl border border-sky-200 dark:border-slate-600 transition-all shadow-sm">
+                    <svg id="moonSvg" class="w-4 h-4 text-sky-700 block dark:hidden" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"></path>
+                    </svg>
+                    <svg id="sunSvg" class="w-4 h-4 text-amber-400 hidden dark:block" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 1v2m0 18v2M4.22 4.22l1.42 1.42m12.72 12.72l1.42 1.42M1 12h2m18 0h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"></path>
+                    </svg>
                 </button>
 
                 <!-- Language Switcher -->
@@ -181,7 +196,6 @@
                 <!-- Google Auth Button / User Profile -->
                 <div id="auth-container">
                     <button onclick="handleLoginClick()" id="login-btn" class="flex items-center gap-2 bg-sky-600 hover:bg-sky-700 text-white px-3 py-1.5 rounded-xl text-xs font-semibold shadow-md shadow-sky-200 dark:shadow-sky-900/50 transition-all neon-glow-hover">
-                        <!-- আসল গুগল আইকন (SVG) -->
                         <svg class="w-4 h-4 bg-white rounded-full p-0.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                             <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
                             <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
@@ -218,18 +232,18 @@
             </div>
         </div>
 
-        <!-- Summary Cards -->
+        <!-- Summary Cards (ডাইনামিক ব্যালেন্স কালার সহ) -->
         <div class="grid grid-cols-3 gap-2 sm:gap-4 mb-4">
-            <div class="glass-card bg-white p-3 sm:p-5 rounded-2xl shadow-sm border border-sky-100 dark:border-darkBorder text-center sm:text-left transition-colors">
-                <p class="text-[10px] sm:text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider" id="lbl-total-get">পাওনা ( পাবো )</p>
+            <div class="glass-card bg-emerald-50/60 dark:bg-darkCard p-3 sm:p-5 rounded-2xl shadow-sm border border-emerald-200 dark:border-emerald-900/50 text-center sm:text-left transition-colors">
+                <p class="text-[10px] sm:text-xs font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider" id="lbl-total-get">পাওনা ( পাবো )</p>
                 <h3 id="totalReceivable" class="text-base sm:text-2xl font-black text-emerald-600 dark:text-emerald-400 mt-1">৳ 0</h3>
             </div>
-            <div class="glass-card bg-white p-3 sm:p-5 rounded-2xl shadow-sm border border-sky-100 dark:border-darkBorder text-center sm:text-left transition-colors">
-                <p class="text-[10px] sm:text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider" id="lbl-total-give">দেনা ( দিতে হবে )</p>
+            <div class="glass-card bg-rose-50/60 dark:bg-darkCard p-3 sm:p-5 rounded-2xl shadow-sm border border-rose-200 dark:border-rose-900/50 text-center sm:text-left transition-colors">
+                <p class="text-[10px] sm:text-xs font-bold text-rose-700 dark:text-rose-400 uppercase tracking-wider" id="lbl-total-give">দেনা ( দিতে হবে )</p>
                 <h3 id="totalPayable" class="text-base sm:text-2xl font-black text-rose-600 dark:text-rose-400 mt-1">৳ 0</h3>
             </div>
-            <div class="glass-card bg-white p-3 sm:p-5 rounded-2xl shadow-sm border border-sky-100 dark:border-darkBorder text-center sm:text-left transition-colors">
-                <p class="text-[10px] sm:text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider" id="lbl-total-balance">ব্যালেন্স</p>
+            <div id="netBalanceCard" class="glass-card bg-white p-3 sm:p-5 rounded-2xl shadow-sm border border-sky-100 dark:border-darkBorder text-center sm:text-left transition-colors">
+                <p class="text-[10px] sm:text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider" id="lbl-total-balance">ব্যালেন্স</p>
                 <h3 id="netBalance" class="text-base sm:text-2xl font-black text-sky-600 dark:text-sky-400 mt-1">৳ 0</h3>
             </div>
         </div>
@@ -268,7 +282,7 @@
         <div id="ledgerView" class="hidden glass-card bg-white rounded-2xl shadow-sm border border-sky-100 dark:border-darkBorder p-3 sm:p-6 mb-6 transition-colors">
             <div class="flex items-center justify-between mb-3">
                 <button onclick="goBackToHome()" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-sky-50 dark:bg-slate-800 hover:bg-sky-100 dark:hover:bg-slate-700 text-sky-700 dark:text-slate-300 rounded-xl text-xs font-semibold transition-all border border-sky-200 dark:border-slate-600">
-                    <i class="ph-bold ph-arrow-left text-sm"></i> <span id="btn-back">তালিকায় ফিরে যান</span>
+                    <i class="ph-bold ph-arrow-left text-sm"></i> <span id="btn-back">তালিকায় ফিরে যান</span>
                 </button>
                 <button onclick="deleteActivePerson()" class="inline-flex items-center gap-1 px-3 py-1.5 bg-rose-50 dark:bg-rose-900/30 hover:bg-rose-100 dark:hover:bg-rose-900/50 text-rose-600 dark:text-rose-400 rounded-xl text-xs font-semibold transition-all border border-rose-200 dark:border-rose-800" title="এই খাতাটি মুছে ফেলুন">
                     <i class="ph-bold ph-trash text-sm"></i> <span id="btn-delete-person">খাতা ডিলিট করুন</span>
@@ -352,33 +366,27 @@
     <!-- Scripting -->
     <script>
         // ==========================================
-        // 🔥 FIX 1: ডার্ক মোড ডিফল্টভাবে বন্ধ থাকবে
+        // 🔥 FIX 1: ডার্ক মোড টগল (ডিফল্টভাবে লাইট থাকবে)
         // ==========================================
         function toggleDarkMode() {
             const html = document.documentElement;
-            const icon = document.getElementById('darkModeIcon');
             if (html.classList.contains('dark')) {
                 html.classList.remove('dark');
                 localStorage.setItem('theme', 'light');
-                icon.className = 'ph-bold ph-moon text-sm';
             } else {
                 html.classList.add('dark');
                 localStorage.setItem('theme', 'dark');
-                icon.className = 'ph-bold ph-sun text-sm';
             }
+            renderGlobalSummary();
         }
 
-        // পেজ লোড হওয়ার সময় চেক করবে: ইউজার আগে ডার্ক মোড অন করেছিল কি না।
-        // ইউজার নতুন হলে (কোনো সেটিং নেই) ডিফল্টভাবে "লাইট মোড" থাকবে।
         if (localStorage.getItem('theme') === 'dark') {
             document.documentElement.classList.add('dark');
-            document.getElementById('darkModeIcon').className = 'ph-bold ph-sun text-sm';
         } else {
             document.documentElement.classList.remove('dark');
-            document.getElementById('darkModeIcon').className = 'ph-bold ph-moon text-sm';
         }
 
-        // 🔧 ফায়ারবেস কনফিগারেশন
+        // 🔧 ফায়ারবেস কনফিগারেশন
         const firebaseConfig = {
             apiKey: "AIzaSyAKJ_eOuRAnRvdJYPVXsVi16DjLxAGchiE",
             authDomain: "cybrfix-smart-ledger.firebaseapp.com",
@@ -393,6 +401,7 @@
             firebase.initializeApp(firebaseConfig);
         }
         const auth = firebase.auth();
+        auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
         const db = firebase.firestore();
 
         let currentUser = null;
@@ -415,7 +424,7 @@
                 currentStatus: "বর্তমান হিসাব", txTypeLbl: "লেনদেনের ধরণ", optGive: "দিলাম (পকেট থেকে গেল)", optReceive: "পেলাম (পকেটে আসলো)",
                 txAmountPh: "০.০০", txNotePh: "কারণ বা নোট...", addTxBtn: "যোগ করুন", updateTxBtn: "আপডেট করুন",
                 tblDate: "তারিখ", tblNote: "বিবরণ", tblType: "ধরণ", tblAmount: "পরিমাণ", tblAction: "অ্যাকশন",
-                noTransMsg: "এই ব্যক্তির সাথে এখনও কোনো লেনদেন রেকর্ড হয়নি।", backBtn: "তালিকায় ফিরে যান", deletePersonBtn: "খাতা ডিলিট করুন",
+                noTransMsg: "এই ব্যক্তির সাথে এখনও কোনো লেনদেন রেকর্ড হয়নি।", backBtn: "তালিকায় ফিরে যান", deletePersonBtn: "খাতা ডিলিট করুন",
                 giveText: "দিলাম", receiveText: "পেলাম", defaultGiveNote: "দিলাম", defaultReceiveNote: "পেলাম",
                 statusGet: "পাবো", statusGive: "দেনা", statusEqual: "সমতা"
             },
@@ -492,7 +501,7 @@
             if (hasOfflineData) {
                 document.getElementById('syncModal').classList.remove('hidden');
             } else {
-                loginWithGoogle();
+                startDirectGoogleLogin();
             }
         }
 
@@ -519,22 +528,13 @@
                 }
                 localStorage.removeItem('cybrfix_smart_khata_offline');
             }
-            loginWithGoogle();
+            startDirectGoogleLogin();
         }
 
-        // ==========================================
-        // 🔥 FIX 2: iOS/Safari-তে গুগল লগইন ঠিক করা
-        // ==========================================
-        function loginWithGoogle() {
+        function startDirectGoogleLogin() {
             const provider = new firebase.auth.GoogleAuthProvider();
-            // prompt: 'select_account' দিলে ব্রাউজার সবসময় অ্যাকাউন্ট সিলেক্ট করার পেজ দেখাবে
-            provider.setCustomParameters({ 
-                prompt: 'select_account',
-                // iOS-এর জন্য বিশেষ প্যারামিটার
-                auth_type: 'reauthenticate'
-            });
+            provider.setCustomParameters({ prompt: 'select_account' });
 
-            // iOS এর জন্য পপআপের বদলে রিডাইরেক্ট ব্যবহার করা ভালো
             const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
             
             if (isIOS) {
@@ -543,15 +543,18 @@
                 });
             } else {
                 auth.signInWithPopup(provider).catch((error) => {
-                    // পপআপ ব্লক হলে ফলব্যাক হিসেবে রিডাইরেক্ট
-                    if (error.code === 'auth/popup-blocked' || error.code === 'auth/cancelled-popup-request') {
+                    if (error.code === 'auth/popup-blocked' || error.code === 'auth/operation-not-supported-in-this-environment') {
                         auth.signInWithRedirect(provider);
-                    } else {
+                    } else if (error.code !== 'auth/popup-closed-by-user' && error.code !== 'auth/cancelled-popup-request') {
                         alert("Login Failed: " + error.message);
                     }
                 });
             }
         }
+
+        auth.getRedirectResult().catch((error) => {
+            if (error.code) console.error("Redirect login error:", error);
+        });
 
         function logoutUser() {
             if (unsubscribeSnapshot) { unsubscribeSnapshot(); unsubscribeSnapshot = null; }
@@ -573,19 +576,12 @@
             document.getElementById('sync-banner-text').textContent = translations[currentLang].syncText;
         }
 
-        // গুগল রিডাইরেক্ট থেকে ফিরে আসার পর ডেটা ধরার জন্য
-        auth.getRedirectResult().catch((error) => {
-            if (error.code) {
-                console.error("Redirect login error:", error);
-            }
-        });
-
         auth.onAuthStateChanged((user) => {
             currentUser = user;
             if (user) {
                 document.getElementById('login-btn').classList.add('hidden');
                 document.getElementById('user-profile').classList.remove('hidden');
-                document.getElementById('user-avatar').src = user.photoURL || 'https://via.placeholder.com/150';
+                document.getElementById('user-avatar').src = user.photoURL || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(user.email || 'U') + '&background=0284c7&color=fff';
                 document.getElementById('user-name').textContent = user.displayName || user.email;
                 document.getElementById('sync-banner').className = "bg-sky-50 dark:bg-slate-800 border border-sky-200 dark:border-darkBorder text-sky-800 dark:text-slate-200 px-3 py-2 rounded-xl text-xs mb-4 flex items-center justify-between shadow-sm";
                 document.getElementById('sync-banner-text').textContent = currentLang === 'bn' ? `স্বাগতম, ${user.displayName || 'ব্যবহারকারী'}! আপনার ডাটা ক্লাউডে সুরক্ষিত আছে।` : `Welcome, ${user.displayName || 'User'}! Data safely synced.`;
@@ -669,15 +665,12 @@
                 db.collection("users").doc(currentUser.uid).set({
                     ledgerData: ledgerData,
                     updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-                }).then(() => {
-                    console.log("✅ Data saved to Firebase!");
                 }).catch((err) => {
                     console.error("❌ Error saving: ", err);
                 });
                 localStorage.setItem('cybrfix_smart_khata_' + currentUser.uid, JSON.stringify(ledgerData));
             } else {
                 localStorage.setItem('cybrfix_smart_khata_offline', JSON.stringify(ledgerData));
-                console.log("✅ Data saved to Local Storage (Offline Mode)");
             }
 
             renderPersonList();
@@ -1000,8 +993,29 @@
             
             const net = totalReceivable - totalPayable;
             const netEl = document.getElementById('netBalance');
-            netEl.textContent = `৳ ${net.toLocaleString('en-IN')}`;
-            netEl.className = `text-base sm:text-2xl font-black mt-1 ${net >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`;
+            const netCardEl = document.getElementById('netBalanceCard');
+            const netLblEl = document.getElementById('lbl-total-balance');
+            const t = translations[currentLang];
+
+            if (net > 0) {
+                netEl.textContent = `৳ ${net.toLocaleString('en-IN')}`;
+                netEl.className = 'text-base sm:text-2xl font-black mt-1 text-emerald-600 dark:text-emerald-400';
+                netCardEl.className = 'glass-card bg-emerald-50/60 dark:bg-darkCard p-3 sm:p-5 rounded-2xl shadow-sm border border-emerald-200 dark:border-emerald-900/50 text-center sm:text-left transition-colors';
+                netLblEl.className = 'text-[10px] sm:text-xs font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider';
+                netLblEl.textContent = `${t.totalBalance} (${t.statusGet})`;
+            } else if (net < 0) {
+                netEl.textContent = `- ৳ ${Math.abs(net).toLocaleString('en-IN')}`;
+                netEl.className = 'text-base sm:text-2xl font-black mt-1 text-rose-600 dark:text-rose-400';
+                netCardEl.className = 'glass-card bg-rose-50/60 dark:bg-darkCard p-3 sm:p-5 rounded-2xl shadow-sm border border-rose-200 dark:border-rose-900/50 text-center sm:text-left transition-colors';
+                netLblEl.className = 'text-[10px] sm:text-xs font-bold text-rose-700 dark:text-rose-400 uppercase tracking-wider';
+                netLblEl.textContent = `${t.totalBalance} (${t.statusGive})`;
+            } else {
+                netEl.textContent = `৳ 0`;
+                netEl.className = 'text-base sm:text-2xl font-black mt-1 text-sky-600 dark:text-sky-400';
+                netCardEl.className = 'glass-card bg-white dark:bg-darkCard p-3 sm:p-5 rounded-2xl shadow-sm border border-sky-100 dark:border-darkBorder text-center sm:text-left transition-colors';
+                netLblEl.className = 'text-[10px] sm:text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider';
+                netLblEl.textContent = t.totalBalance;
+            }
         }
 
         function exportData() {
@@ -1030,15 +1044,34 @@
             }
         }
 
-        // অ্যাপ চালু হলে আগে অফলাইন ডাটা লোড হবে
         loadOfflineData();
         switchLanguage(currentLang);
 
-        // 🔥 Service Worker রেজিস্ট্রেশন (অ্যাপ ইনস্টলের জন্য)
+        let deferredPrompt;
+        const pwaInstallBtn = document.getElementById('pwaInstallBtn');
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            deferredPrompt = e;
+            pwaInstallBtn.classList.remove('hidden');
+            pwaInstallBtn.classList.add('flex');
+        });
+
+        function installPWA() {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then((choiceResult) => {
+                    if (choiceResult.outcome === 'accepted') {
+                        pwaInstallBtn.classList.add('hidden');
+                    }
+                    deferredPrompt = null;
+                });
+            }
+        }
+
         if ('serviceWorker' in navigator) {
             const swCode = `
                 self.addEventListener('fetch', function(event) {
-                    // আপাতত খালি, শুধু PWA ইনস্টলের শর্ত পূরণের জন্য
+                    // PWA ইনস্টলের শর্ত পূরণের জন্য
                 });
             `;
             const swBlob = new Blob([swCode], {type: 'application/javascript'});
